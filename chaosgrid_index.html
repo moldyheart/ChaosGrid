@@ -1,0 +1,1992 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChaosGrid - Offline Random Number & Table Generator</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --card-soft: #f0f4ff;
+      --text: #182033;
+      --muted: #65728a;
+      --line: #dfe6f2;
+      --primary: #4f7cff;
+      --primary-2: #00a6c8;
+      --danger: #c24141;
+      --warning: #b7791f;
+      --success: #1f7a4d;
+      --shadow: 0 12px 34px rgba(22, 34, 66, 0.10);
+      --radius: 18px;
+      --input: #ffffff;
+      --code-bg: #edf2ff;
+      --bar-bg: #e7edf8;
+      --bar-fill: linear-gradient(90deg, #4f7cff, #00a6c8);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0d1220;
+      --card: #151c2f;
+      --card-soft: #11182a;
+      --text: #edf3ff;
+      --muted: #aab7cf;
+      --line: #2a3550;
+      --primary: #76a5ff;
+      --primary-2: #2ad4f0;
+      --danger: #ff8585;
+      --warning: #ffd27a;
+      --success: #76e3a5;
+      --shadow: 0 14px 36px rgba(0, 0, 0, 0.25);
+      --input: #0f1729;
+      --code-bg: #101829;
+      --bar-bg: #27324a;
+      --bar-fill: linear-gradient(90deg, #76a5ff, #2ad4f0);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: radial-gradient(circle at top left, rgba(79,124,255,0.12), transparent 28%), var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.5;
+    }
+
+    body { padding: 22px; }
+
+    .app {
+      width: min(1480px, 100%);
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+      padding: 18px 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,0.70);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+    }
+
+    [data-theme="dark"] header { background: rgba(21,28,47,0.86); }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(26px, 3vw, 42px);
+      letter-spacing: -1px;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .top-actions, .actions, .template-grid, .inline-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    button, select, input, textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--card);
+      color: var(--text);
+      padding: 10px 13px;
+      cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+    }
+
+    button:hover { transform: translateY(-1px); border-color: var(--primary); }
+    button:active { transform: translateY(0); }
+
+    .primary {
+      border: 0;
+      color: white;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      font-weight: 700;
+    }
+
+    .danger { color: var(--danger); }
+    .soft { background: var(--card-soft); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr) 360px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .card h2, .card h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    .section-title {
+      margin: 20px 0 10px;
+      color: var(--muted);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    label {
+      display: block;
+      margin: 11px 0 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--input);
+      color: var(--text);
+      padding: 10px 11px;
+      outline: none;
+    }
+
+    textarea { min-height: 80px; resize: vertical; }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79,124,255,0.14);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 10px 0;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .check-row input { width: auto; }
+
+    .mode-panel { display: none; }
+    .mode-panel.active { display: block; }
+
+    .notice {
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--card-soft);
+      color: var(--muted);
+      margin-bottom: 14px;
+      font-size: 13px;
+    }
+
+    .notice.error {
+      border-color: rgba(194,65,65,0.45);
+      color: var(--danger);
+      background: rgba(194,65,65,0.08);
+    }
+
+    .notice.success {
+      border-color: rgba(31,122,77,0.45);
+      color: var(--success);
+      background: rgba(31,122,77,0.08);
+    }
+
+    .preview-wrap {
+      overflow: auto;
+      max-height: 620px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--input);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 9px 10px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: var(--card-soft);
+      z-index: 1;
+    }
+
+    .list-preview {
+      padding: 14px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 8px;
+    }
+
+    .number-pill {
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--card-soft);
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .stat-item {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px;
+      background: var(--card-soft);
+      min-width: 0;
+    }
+
+    .stat-label { color: var(--muted); font-size: 12px; }
+    .stat-value { margin-top: 4px; font-weight: 700; word-break: break-word; }
+
+    .score {
+      display: grid;
+      gap: 8px;
+    }
+
+    .score-number {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .score-bar, .dist-track {
+      height: 10px;
+      border-radius: 999px;
+      background: var(--bar-bg);
+      overflow: hidden;
+    }
+
+    .score-fill, .dist-fill {
+      height: 100%;
+      background: var(--bar-fill);
+      border-radius: 999px;
+      width: 0;
+    }
+
+    .warning-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .warning-list li {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 9px 10px;
+      background: var(--card-soft);
+      color: var(--muted);
+    }
+
+    .warning-list li.warn { color: var(--warning); }
+    .warning-list li.ok { color: var(--success); }
+
+    .distribution-row {
+      display: grid;
+      grid-template-columns: 92px 1fr 44px;
+      gap: 8px;
+      align-items: center;
+      margin: 8px 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .column-row {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px;
+      background: var(--card-soft);
+      margin-bottom: 10px;
+    }
+
+    .column-head {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .column-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .small { font-size: 12px; color: var(--muted); }
+    .hidden { display: none !important; }
+
+    dialog {
+      width: min(760px, calc(100% - 30px));
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--card);
+      color: var(--text);
+      padding: 0;
+      box-shadow: var(--shadow);
+    }
+
+    dialog::backdrop { background: rgba(0,0,0,0.45); }
+
+    .dialog-body { padding: 20px; }
+
+    .help-text p { margin: 8px 0; color: var(--muted); }
+    .help-text code { background: var(--code-bg); padding: 2px 6px; border-radius: 8px; }
+
+    footer {
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+      margin: 14px 0 0;
+    }
+
+    @media (max-width: 1180px) {
+      .layout { grid-template-columns: 1fr; }
+      header { align-items: flex-start; flex-direction: column; }
+      .top-actions { width: 100%; }
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 12px; }
+      .grid-2, .grid-3, .stat-grid, .column-options, .column-head { grid-template-columns: 1fr; }
+      button { width: 100%; }
+      .top-actions button, .actions button, .inline-actions button { width: auto; flex: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <h1>ChaosGrid</h1>
+        <p>Offline Random Number & Table Generator · 完全离线随机数与随机表格生成器</p>
+      </div>
+      <div class="top-actions">
+        <button id="themeBtn" type="button">Dark Mode</button>
+        <button id="saveSettingsBtn" type="button">Save Settings</button>
+        <button id="resetBtn" type="button" class="danger">Reset</button>
+        <button id="helpBtn" type="button">Help</button>
+      </div>
+    </header>
+
+    <div id="message" class="notice">所有功能都在当前浏览器本地执行。默认使用 Web Crypto API；Seed Mode 用于可复现，不用于安全场景。</div>
+
+    <main class="layout">
+      <aside>
+        <section class="card">
+          <h2>Settings</h2>
+
+          <label for="mode">Mode</label>
+          <select id="mode">
+            <option value="number">Single Number List</option>
+            <option value="table">Random Table</option>
+            <option value="group">Group Assignment</option>
+            <option value="lottery">Lottery Mode</option>
+            <option value="timeseries">Time Series Mode</option>
+            <option value="mock">Mock Dataset Mode</option>
+            <option value="matrix">Random Matrix</option>
+          </select>
+
+          <label for="randomSource">Random Source</label>
+          <select id="randomSource">
+            <option value="secure">Secure Crypto Random</option>
+            <option value="seed">Seed Mode</option>
+            <option value="fallback">Fallback Random</option>
+          </select>
+
+          <div id="seedBox">
+            <label for="seedInput">Seed Text</label>
+            <input id="seedInput" type="text" placeholder="e.g. experiment-001" />
+            <p class="small">相同 seed + 相同参数会得到相同结果。Seed Mode 不适合安全用途。</p>
+          </div>
+
+          <label class="check-row"><input id="humanLike" type="checkbox" /> Human-like No Obvious Pattern Mode</label>
+          <p class="small">减少连续重复、递增递减、固定差值、过度集中等人眼明显规律，不代表数学上更随机。</p>
+        </section>
+
+        <section class="card">
+          <h2>Mode Parameters</h2>
+
+          <div class="mode-panel active" data-mode-panel="number">
+            <div class="grid-2">
+              <div><label for="numberKind">Number Type</label><select id="numberKind"><option value="integer">Integer</option><option value="decimal">Decimal</option></select></div>
+              <div><label for="count">Count</label><input id="count" type="number" min="1" step="1" value="10" /></div>
+            </div>
+            <div class="grid-2">
+              <div><label for="min">Minimum</label><input id="min" type="number" step="any" value="1" /></div>
+              <div><label for="max">Maximum</label><input id="max" type="number" step="any" value="100" /></div>
+            </div>
+            <label for="decimals">Decimal Places</label>
+            <input id="decimals" type="number" min="0" max="10" step="1" value="2" />
+            <label class="check-row"><input id="allowDuplicates" type="checkbox" checked /> Allow Duplicates</label>
+            <label class="check-row"><input id="sortOutput" type="checkbox" /> Sort Output</label>
+            <label class="check-row"><input id="shuffleOutput" type="checkbox" /> Shuffle Output</label>
+            <label class="check-row"><input id="showIndex" type="checkbox" /> Show Index Column</label>
+          </div>
+
+          <div class="mode-panel" data-mode-panel="table">
+            <div class="grid-2">
+              <div><label for="tableRows">Rows</label><input id="tableRows" type="number" min="1" step="1" value="10" /></div>
+              <div><label for="tableCols">Columns</label><input id="tableCols" type="number" min="1" max="50" step="1" value="3" /></div>
+            </div>
+            <label class="check-row"><input id="tableAddId" type="checkbox" checked /> Add ID Column</label>
+            <label class="check-row"><input id="tableAddTimestamp" type="checkbox" /> Add Timestamp Column</label>
+            <div class="inline-actions">
+              <button id="rebuildColumnsBtn" type="button">Build Columns</button>
+              <button id="addColumnBtn" type="button">Add Column</button>
+            </div>
+            <div id="tableColumns" style="margin-top:12px;"></div>
+          </div>
+
+          <div class="mode-panel" data-mode-panel="group">
+            <div class="grid-2">
+              <div><label for="participantCount">Participants</label><input id="participantCount" type="number" min="1" step="1" value="10" /></div>
+              <div><label for="groupCount">Group Count</label><input id="groupCount" type="number" min="1" step="1" value="2" /></div>
+            </div>
+            <label for="groupNames">Group Names</label>
+            <input id="groupNames" type="text" value="A, B, C, D" />
+            <label class="check-row"><input id="balancedGroups" type="checkbox" checked /> Balanced Assignment</label>
+            <label class="check-row"><input id="shuffleGroups" type="checkbox" checked /> Shuffle Participants</label>
+          </div>
+
+          <div class="mode-panel" data-mode-panel="lottery">
+            <div class="grid-2">
+              <div><label for="lotteryMin">Minimum</label><input id="lotteryMin" type="number" step="1" value="1" /></div>
+              <div><label for="lotteryMax">Maximum</label><input id="lotteryMax" type="number" step="1" value="100" /></div>
+            </div>
+            <div class="grid-2">
+              <div><label for="winnerCount">Winner Count</label><input id="winnerCount" type="number" min="1" step="1" value="5" /></div>
+              <div><label for="backupCount">Backup Count</label><input id="backupCount" type="number" min="0" step="1" value="0" /></div>
+            </div>
+            <label class="check-row"><input id="lotteryUnique" type="checkbox" checked /> Unique Winners</label>
+            <label class="check-row"><input id="lotterySort" type="checkbox" /> Sort Winners</label>
+            <label class="check-row"><input id="hideLottery" type="checkbox" /> Hide Until Reveal</label>
+          </div>
+
+          <div class="mode-panel" data-mode-panel="timeseries">
+            <label for="tsStart">Start DateTime</label>
+            <input id="tsStart" type="datetime-local" />
+            <div class="grid-2">
+              <div><label for="tsRows">Rows</label><input id="tsRows" type="number" min="1" step="1" value="24" /></div>
+              <div><label for="tsInterval">Interval Minutes</label><input id="tsInterval" type="number" min="1" step="1" value="60" /></div>
+            </div>
+            <div class="grid-2">
+              <div><label for="tsMin">Value Min</label><input id="tsMin" type="number" step="any" value="0" /></div>
+              <div><label for="tsMax">Value Max</label><input id="tsMax" type="number" step="any" value="100" /></div>
+            </div>
+            <div class="grid-2">
+              <div><label for="tsDecimals">Decimal Places</label><input id="tsDecimals" type="number" min="0" max="10" step="1" value="0" /></div>
+              <div><label for="tsValueName">Value Column</label><input id="tsValueName" type="text" value="Value" /></div>
+            </div>
+          </div>
+
+          <div class="mode-panel" data-mode-panel="mock">
+            <label for="mockRows">Rows</label>
+            <input id="mockRows" type="number" min="1" step="1" value="20" />
+            <label for="mockPreset">Dataset Preset</label>
+            <select id="mockPreset">
+              <option value="users">Mock Users</option>
+              <option value="orders">Mock Orders</option>
+              <option value="survey">Survey Dataset</option>
+              <option value="scores">Student Scores</option>
+            </select>
+          </div>
+
+          <div class="mode-panel" data-mode-panel="matrix">
+            <div class="grid-2">
+              <div><label for="matrixRows">Rows</label><input id="matrixRows" type="number" min="1" step="1" value="3" /></div>
+              <div><label for="matrixCols">Columns</label><input id="matrixCols" type="number" min="1" step="1" value="3" /></div>
+            </div>
+            <div class="grid-2">
+              <div><label for="matrixMin">Minimum</label><input id="matrixMin" type="number" step="any" value="0" /></div>
+              <div><label for="matrixMax">Maximum</label><input id="matrixMax" type="number" step="any" value="99" /></div>
+            </div>
+            <div class="grid-2">
+              <div><label for="matrixType">Number Type</label><select id="matrixType"><option value="integer">Integer</option><option value="decimal">Decimal</option></select></div>
+              <div><label for="matrixDecimals">Decimal Places</label><input id="matrixDecimals" type="number" min="0" max="10" step="1" value="2" /></div>
+            </div>
+            <label class="check-row"><input id="matrixLabels" type="checkbox" /> Show Row/Column Labels</label>
+          </div>
+
+          <div class="section-title">Templates</div>
+          <div class="template-grid">
+            <button type="button" data-template="quick">Quick 10 Numbers</button>
+            <button type="button" data-template="unique">Unique Draw</button>
+            <button type="button" data-template="lottery6">Lottery 6</button>
+            <button type="button" data-template="scores">Student Scores</button>
+            <button type="button" data-template="ab">A/B Groups</button>
+            <button type="button" data-template="matrix">Matrix 10×10</button>
+            <button type="button" data-template="timeseries">Time Series</button>
+            <button type="button" data-template="orders">Mock Orders</button>
+            <button type="button" data-template="survey">Survey</button>
+            <button type="button" data-template="normal">Normal Sample</button>
+          </div>
+        </section>
+      </aside>
+
+      <section>
+        <section class="card">
+          <div class="actions" style="justify-content:space-between;margin-bottom:12px;">
+            <h2 style="margin:0;">Result Preview</h2>
+            <div class="actions">
+              <button id="generateBtn" type="button" class="primary">Generate</button>
+              <button id="revealBtn" type="button" class="hidden">Reveal</button>
+              <button id="clearBtn" type="button">Clear</button>
+            </div>
+          </div>
+          <p id="previewInfo" class="small">No data generated yet.</p>
+          <div id="preview" class="preview-wrap"></div>
+        </section>
+
+        <section class="card">
+          <h2>Export</h2>
+          <div class="actions">
+            <button id="copyBtn" type="button">Copy</button>
+            <button id="csvBtn" type="button">Download CSV</button>
+            <button id="txtBtn" type="button">Download TXT</button>
+            <button id="jsonBtn" type="button">Download JSON</button>
+          </div>
+          <p class="small">表格复制为 Tab 分隔文本，方便粘贴到 Excel 或 Google Sheets。</p>
+        </section>
+      </section>
+
+      <aside>
+        <section class="card">
+          <h2>Statistics Summary</h2>
+          <div id="stats" class="stat-grid"></div>
+        </section>
+
+        <section class="card">
+          <h2>Randomness Score</h2>
+          <div class="score">
+            <div id="scoreNumber" class="score-number">-- / 100</div>
+            <div class="score-bar"><div id="scoreFill" class="score-fill"></div></div>
+            <div id="scoreText" class="small">Generate data to evaluate visible randomness.</div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Pattern Warning</h2>
+          <ul id="warnings" class="warning-list"><li>No data generated yet.</li></ul>
+        </section>
+
+        <section class="card">
+          <h2>Distribution Summary</h2>
+          <div id="distribution"></div>
+        </section>
+
+        <section class="card">
+          <h2>History</h2>
+          <div id="history"></div>
+          <button id="clearHistoryBtn" type="button" style="margin-top:10px;">Clear History</button>
+        </section>
+      </aside>
+    </main>
+
+    <footer>
+      Privacy Notice: ChaosGrid runs completely offline in your browser. It does not upload, store, or send generated data to any server. Settings are saved only with localStorage.
+    </footer>
+  </div>
+
+  <dialog id="helpDialog">
+    <div class="dialog-body help-text">
+      <h2>ChaosGrid Help</h2>
+      <p>Secure Mode uses <code>window.crypto.getRandomValues</code> and rejection sampling to reduce modulo bias when generating integers.</p>
+      <p>Seed Mode uses a deterministic PRNG for reproducible experiments. It is not suitable for security-sensitive use.</p>
+      <p>Human-like Mode detects visible patterns such as repeated values, long increasing/decreasing runs, fixed differences, high duplicate rate, and clustered distribution. It reduces obvious patterns but does not prove true randomness.</p>
+      <p>CSV is suitable for Excel and data analysis. JSON is suitable for API mock and development. TXT is suitable for simple number lists or plain records.</p>
+      <p>This tool does not generate physical true randomness and should not be used as the only source for cryptographic keys or high-stakes security systems.</p>
+      <div class="actions" style="justify-content:flex-end;"><button id="closeHelpBtn" type="button">Close</button></div>
+    </div>
+  </dialog>
+
+  <script>
+  (function () {
+    'use strict';
+
+    const CONFIG = Object.freeze({
+      appName: 'ChaosGrid',
+      version: '1.0.0',
+      previewRows: 100,
+      maxNumberCount: 100000,
+      maxTableRows: 50000,
+      maxTableCols: 50,
+      maxDecimals: 10,
+      maxHistory: 10,
+      humanLikeAttempts: 20,
+      distributionBins: 10,
+      storageKeys: {
+        settings: 'chaosgrid.settings.v1',
+        history: 'chaosgrid.history.v1'
+      }
+    });
+
+    const FIELD_TYPES = Object.freeze([
+      { value: 'integer', label: 'Integer' },
+      { value: 'decimal', label: 'Decimal' },
+      { value: 'percentage', label: 'Percentage' },
+      { value: 'boolean', label: 'Boolean' },
+      { value: 'category', label: 'Category' },
+      { value: 'group', label: 'Group' },
+      { value: 'id', label: 'ID' },
+      { value: 'date', label: 'Date' },
+      { value: 'time', label: 'Time' },
+      { value: 'datetime', label: 'DateTime' },
+      { value: 'code', label: 'Random Code' },
+      { value: 'score', label: 'Score' },
+      { value: 'normal', label: 'Normal Distribution Number' },
+      { value: 'weighted', label: 'Weighted Category' }
+    ]);
+
+    const DEFAULT_COLUMNS = Object.freeze([
+      { name: 'Score', type: 'integer', min: 0, max: 100, decimals: 0, values: 'A, B, C', weights: 'A:1, B:1, C:1' },
+      { name: 'Age', type: 'integer', min: 18, max: 60, decimals: 0, values: 'A, B, C', weights: 'A:1, B:1, C:1' },
+      { name: 'Group', type: 'category', min: 0, max: 100, decimals: 2, values: 'A, B, C', weights: 'A:1, B:1, C:1' }
+    ]);
+
+    const MOCK_PRESETS = Object.freeze({
+      users: [
+        { name: 'user_id', type: 'code', prefix: 'U', length: 4 },
+        { name: 'age', type: 'integer', min: 18, max: 65 },
+        { name: 'score', type: 'score' },
+        { name: 'group', type: 'category', values: 'A, B, C' },
+        { name: 'status', type: 'category', values: 'active, inactive, pending' },
+        { name: 'created_time', type: 'datetime' }
+      ],
+      orders: [
+        { name: 'order_id', type: 'code', prefix: 'O', length: 6 },
+        { name: 'price', type: 'decimal', min: 5, max: 500, decimals: 2 },
+        { name: 'quantity', type: 'integer', min: 1, max: 10 },
+        { name: 'discount', type: 'percentage' },
+        { name: 'status', type: 'category', values: 'paid, pending, cancelled, refunded' },
+        { name: 'created_time', type: 'datetime' }
+      ],
+      survey: [
+        { name: 'respondent_id', type: 'code', prefix: 'R', length: 5 },
+        { name: 'age', type: 'integer', min: 16, max: 75 },
+        { name: 'score', type: 'integer', min: 1, max: 10 },
+        { name: 'satisfaction', type: 'weighted', weights: 'low:1, medium:3, high:5' },
+        { name: 'group', type: 'category', values: 'control, variant_a, variant_b' }
+      ],
+      scores: [
+        { name: 'student_id', type: 'code', prefix: 'S', length: 4 },
+        { name: 'Math', type: 'score' },
+        { name: 'English', type: 'score' },
+        { name: 'Science', type: 'score' }
+      ]
+    });
+
+    const els = {};
+    const state = {
+      rng: null,
+      result: null,
+      hiddenLottery: null,
+      history: []
+    };
+
+    document.addEventListener('DOMContentLoaded', init);
+
+    function init() {
+      bindElements();
+      setDefaultDateTime();
+      buildColumns(Number(getValue('tableCols')) || 3);
+      loadSettings();
+      loadHistory();
+      bindEvents();
+      applyModeVisibility();
+      updateSeedVisibility();
+      renderHistory();
+      renderEmptyState();
+      updateRandomSourceNotice();
+    }
+
+    function bindElements() {
+      document.querySelectorAll('[id]').forEach(function (el) { els[el.id] = el; });
+    }
+
+    function bindEvents() {
+      els.mode.addEventListener('change', function () { applyModeVisibility(); saveSettings(false); });
+      els.randomSource.addEventListener('change', function () { updateSeedVisibility(); updateRandomSourceNotice(); saveSettings(false); });
+      els.themeBtn.addEventListener('click', toggleTheme);
+      els.generateBtn.addEventListener('click', handleGenerate);
+      els.revealBtn.addEventListener('click', revealLottery);
+      els.clearBtn.addEventListener('click', clearResult);
+      els.resetBtn.addEventListener('click', resetSettings);
+      els.saveSettingsBtn.addEventListener('click', function () { saveSettings(true); });
+      els.rebuildColumnsBtn.addEventListener('click', function () { buildColumns(readPositiveInteger('tableCols', 'Table columns')); });
+      els.addColumnBtn.addEventListener('click', function () { addColumnRow({ name: 'Column ' + (getColumnConfigs().length + 1), type: 'integer', min: 1, max: 100, decimals: 0, values: 'A, B, C', weights: 'A:1, B:1, C:1' }); syncColumnCount(); });
+      els.copyBtn.addEventListener('click', copyResult);
+      els.csvBtn.addEventListener('click', function () { downloadResult('csv'); });
+      els.txtBtn.addEventListener('click', function () { downloadResult('txt'); });
+      els.jsonBtn.addEventListener('click', function () { downloadResult('json'); });
+      els.clearHistoryBtn.addEventListener('click', clearHistory);
+      els.helpBtn.addEventListener('click', function () { els.helpDialog.showModal(); });
+      els.closeHelpBtn.addEventListener('click', function () { els.helpDialog.close(); });
+      document.querySelectorAll('[data-template]').forEach(function (btn) {
+        btn.addEventListener('click', function () { applyTemplate(btn.getAttribute('data-template')); });
+      });
+      document.addEventListener('input', debounce(function (event) {
+        if (event.target && event.target.id && event.target.closest('.app')) saveSettings(false);
+      }, 350));
+      window.addEventListener('beforeunload', function () { saveSettings(false); });
+    }
+
+    function applyModeVisibility() {
+      const mode = getValue('mode');
+      document.querySelectorAll('[data-mode-panel]').forEach(function (panel) {
+        panel.classList.toggle('active', panel.getAttribute('data-mode-panel') === mode);
+      });
+    }
+
+    function updateSeedVisibility() {
+      els.seedBox.classList.toggle('hidden', getValue('randomSource') !== 'seed');
+    }
+
+    function updateRandomSourceNotice() {
+      const hasCrypto = hasSecureCrypto();
+      const source = getValue('randomSource');
+      if (source === 'secure' && hasCrypto) {
+        showMessage('Random Source: Secure Crypto Random。使用浏览器 Web Crypto API，并通过 rejection sampling 减少整数取模偏差。', 'success');
+      } else if (source === 'secure' && !hasCrypto) {
+        showMessage('当前浏览器不支持 Web Crypto API，将自动使用备用模式。Fallback mode is less secure.', 'error');
+      } else if (source === 'seed') {
+        showMessage('Random Source: Seed Mode。结果可复现，但不适合安全用途。', '');
+      } else {
+        showMessage('Random Source: Fallback Random。仅作为兼容模式，随机质量低于 Secure Mode。', 'error');
+      }
+    }
+
+    function createRng() {
+      const source = getValue('randomSource');
+      if (source === 'seed') {
+        const seed = getValue('seedInput').trim();
+        if (!seed) throw new Error('Seed cannot be empty in Seed Mode. 请输入 seed。');
+        return RandomFactory.seeded(seed);
+      }
+      if (source === 'secure' && hasSecureCrypto()) return RandomFactory.secure();
+      return RandomFactory.fallback();
+    }
+
+    const RandomFactory = {
+      secure: function () {
+        return {
+          source: 'secure',
+          unit: function () {
+            const value = new Uint32Array(1);
+            window.crypto.getRandomValues(value);
+            return value[0] / 4294967296;
+          },
+          int: secureInt
+        };
+      },
+      seeded: function (seed) {
+        const seedHash = xmur3(seed);
+        const rand = mulberry32(seedHash());
+        return {
+          source: 'seed',
+          unit: rand,
+          int: function (min, max) { return min + Math.floor(rand() * (max - min + 1)); }
+        };
+      },
+      fallback: function () {
+        return {
+          source: 'fallback',
+          unit: Math.random,
+          int: function (min, max) { return min + Math.floor(Math.random() * (max - min + 1)); }
+        };
+      }
+    };
+
+    function hasSecureCrypto() {
+      return !!(window.crypto && window.crypto.getRandomValues && window.Uint32Array);
+    }
+
+    function secureInt(min, max) {
+      const range = max - min + 1;
+      if (!Number.isSafeInteger(range) || range <= 0 || range > 4294967296) {
+        return min + Math.floor(RandomFactory.secure().unit() * range);
+      }
+      const maxUint = 4294967296;
+      const limit = maxUint - (maxUint % range);
+      const value = new Uint32Array(1);
+      do {
+        window.crypto.getRandomValues(value);
+      } while (value[0] >= limit);
+      return min + (value[0] % range);
+    }
+
+    function xmur3(str) {
+      let h = 1779033703 ^ str.length;
+      for (let i = 0; i < str.length; i++) {
+        h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+        h = (h << 13) | (h >>> 19);
+      }
+      return function () {
+        h = Math.imul(h ^ (h >>> 16), 2246822507);
+        h = Math.imul(h ^ (h >>> 13), 3266489909);
+        return (h ^= h >>> 16) >>> 0;
+      };
+    }
+
+    function mulberry32(a) {
+      return function () {
+        a |= 0;
+        a = (a + 0x6D2B79F5) | 0;
+        let t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function handleGenerate() {
+      try {
+        state.rng = createRng();
+        const mode = getValue('mode');
+        const generators = {
+          number: generateNumberMode,
+          table: generateTableMode,
+          group: generateGroupMode,
+          lottery: generateLotteryMode,
+          timeseries: generateTimeSeriesMode,
+          mock: generateMockMode,
+          matrix: generateMatrixMode
+        };
+        if (!generators[mode]) throw new Error('Unsupported mode.');
+
+        let result;
+        if (els.humanLike.checked && ['number', 'lottery', 'matrix'].includes(mode)) {
+          result = generateWithHumanLike(generators[mode]);
+        } else {
+          result = generators[mode]();
+        }
+
+        state.result = result;
+        state.hiddenLottery = null;
+        els.revealBtn.classList.add('hidden');
+
+        if (mode === 'lottery' && els.hideLottery.checked) {
+          state.hiddenLottery = result;
+          state.result = makeHiddenLotteryResult(result);
+          els.revealBtn.classList.remove('hidden');
+        }
+
+        renderAll();
+        saveHistory(state.hiddenLottery || state.result);
+        saveSettings(false);
+        showMessage('Generated successfully. 已生成结果。', 'success');
+      } catch (err) {
+        showMessage(err.message || String(err), 'error');
+      }
+    }
+
+    function generateWithHumanLike(generator) {
+      let best = null;
+      let bestScore = -1;
+      for (let attempt = 0; attempt < CONFIG.humanLikeAttempts; attempt++) {
+        const candidate = generator();
+        const numeric = extractNumericValues(candidate.data);
+        const analysis = PatternAnalyzer.analyze(numeric);
+        if (analysis.score > bestScore) {
+          best = candidate;
+          bestScore = analysis.score;
+        }
+        if (analysis.warnings.length === 0 || analysis.score >= 90) return candidate;
+      }
+      if (best) best.note = 'Human-like Mode reached max attempts. Best available result is shown.';
+      return best;
+    }
+
+    function generateNumberMode() {
+      const kind = getValue('numberKind');
+      const count = readPositiveInteger('count', 'Count');
+      assertLimit(count, CONFIG.maxNumberCount, 'Count');
+      const min = readNumber('min', 'Minimum');
+      const max = readNumber('max', 'Maximum');
+      assertMinMax(min, max);
+      const decimals = readIntegerInRange('decimals', 'Decimal places', 0, CONFIG.maxDecimals);
+      const allowDuplicates = els.allowDuplicates.checked;
+
+      let values;
+      if (kind === 'integer' || decimals === 0) {
+        values = allowDuplicates
+          ? repeat(count, function () { return state.rng.int(Math.ceil(min), Math.floor(max)); })
+          : uniqueIntegers(Math.ceil(min), Math.floor(max), count);
+      } else {
+        values = allowDuplicates
+          ? repeat(count, function () { return randomDecimal(min, max, decimals); })
+          : uniqueDecimals(min, max, decimals, count);
+      }
+
+      if (els.sortOutput.checked) values.sort(function (a, b) { return Number(a) - Number(b); });
+      if (els.shuffleOutput.checked) shuffle(values);
+
+      if (els.showIndex.checked) {
+        return {
+          kind: 'table',
+          mode: 'number',
+          title: 'Random Number List',
+          data: values.map(function (value, index) { return { Index: index + 1, Value: value }; }),
+          params: collectSettings()
+        };
+      }
+
+      return { kind: 'list', mode: 'number', title: 'Random Number List', data: values, params: collectSettings() };
+    }
+
+    function generateTableMode() {
+      const rows = readPositiveInteger('tableRows', 'Table rows');
+      assertLimit(rows, CONFIG.maxTableRows, 'Table rows');
+      const columns = getColumnConfigs();
+      if (columns.length < 1) throw new Error('At least one table column is required.');
+      assertLimit(columns.length, CONFIG.maxTableCols, 'Table columns');
+
+      const data = [];
+      for (let i = 0; i < rows; i++) {
+        const row = {};
+        if (els.tableAddId.checked) row.ID = i + 1;
+        if (els.tableAddTimestamp.checked) row.Timestamp = formatDateTime(new Date());
+        columns.forEach(function (col) { row[col.name] = FieldGenerator.generate(col, i); });
+        data.push(row);
+      }
+      return { kind: 'table', mode: 'table', title: 'Random Table', data: data, params: collectSettings() };
+    }
+
+    function generateGroupMode() {
+      const participantCount = readPositiveInteger('participantCount', 'Participant count');
+      const groupCount = readPositiveInteger('groupCount', 'Group count');
+      if (groupCount > participantCount) throw new Error('Group count cannot be greater than participant count.');
+      const names = parseList(getValue('groupNames'));
+      if (names.length < groupCount) throw new Error('Group names are not enough. Please add more group names.');
+
+      const groupPool = [];
+      if (els.balancedGroups.checked) {
+        for (let i = 0; i < participantCount; i++) groupPool.push(names[i % groupCount]);
+        shuffle(groupPool);
+      }
+      const participants = repeat(participantCount, function (_, i) { return i + 1; });
+      if (els.shuffleGroups.checked) shuffle(participants);
+
+      const data = participants.map(function (participantId, index) {
+        return {
+          'Participant ID': participantId,
+          Group: els.balancedGroups.checked ? groupPool[index] : names[state.rng.int(0, groupCount - 1)]
+        };
+      }).sort(function (a, b) { return a['Participant ID'] - b['Participant ID']; });
+
+      return { kind: 'table', mode: 'group', title: 'Group Assignment', data: data, params: collectSettings() };
+    }
+
+    function generateLotteryMode() {
+      const min = readInteger('lotteryMin', 'Lottery minimum');
+      const max = readInteger('lotteryMax', 'Lottery maximum');
+      assertMinMax(min, max);
+      const winnerCount = readPositiveInteger('winnerCount', 'Winner count');
+      const backupCount = readNonNegativeInteger('backupCount', 'Backup count');
+      const total = winnerCount + backupCount;
+      const unique = els.lotteryUnique.checked;
+      let numbers;
+      if (unique) {
+        numbers = uniqueIntegers(min, max, total);
+      } else {
+        numbers = repeat(total, function () { return state.rng.int(min, max); });
+      }
+      const winners = numbers.slice(0, winnerCount);
+      const backups = numbers.slice(winnerCount);
+      if (els.lotterySort.checked) winners.sort(function (a, b) { return a - b; });
+      const data = winners.map(function (n, i) { return { Type: 'Winner', Order: i + 1, Number: n }; })
+        .concat(backups.map(function (n, i) { return { Type: 'Backup', Order: i + 1, Number: n }; }));
+      return { kind: 'table', mode: 'lottery', title: 'Lottery Numbers', data: data, params: collectSettings() };
+    }
+
+    function makeHiddenLotteryResult(result) {
+      return {
+        kind: 'table',
+        mode: 'lottery',
+        title: 'Hidden Lottery Numbers',
+        data: result.data.map(function (row) { return { Type: row.Type, Order: row.Order, Number: 'Hidden' }; }),
+        params: result.params
+      };
+    }
+
+    function revealLottery() {
+      if (!state.hiddenLottery) return;
+      state.result = state.hiddenLottery;
+      state.hiddenLottery = null;
+      els.revealBtn.classList.add('hidden');
+      renderAll();
+      showMessage('Lottery result revealed. 已显示抽奖结果。', 'success');
+    }
+
+    function generateTimeSeriesMode() {
+      const startRaw = getValue('tsStart');
+      if (!startRaw) throw new Error('Start DateTime cannot be empty.');
+      const start = new Date(startRaw);
+      if (Number.isNaN(start.getTime())) throw new Error('Invalid start datetime.');
+      const rows = readPositiveInteger('tsRows', 'Time series rows');
+      assertLimit(rows, CONFIG.maxTableRows, 'Time series rows');
+      const interval = readPositiveInteger('tsInterval', 'Interval minutes');
+      const min = readNumber('tsMin', 'Value minimum');
+      const max = readNumber('tsMax', 'Value maximum');
+      assertMinMax(min, max);
+      const decimals = readIntegerInRange('tsDecimals', 'Decimal places', 0, CONFIG.maxDecimals);
+      const valueName = getValue('tsValueName').trim() || 'Value';
+
+      const data = [];
+      for (let i = 0; i < rows; i++) {
+        const time = new Date(start.getTime() + i * interval * 60000);
+        const row = { Time: formatDateTime(time) };
+        row[valueName] = decimals === 0 ? state.rng.int(Math.ceil(min), Math.floor(max)) : randomDecimal(min, max, decimals);
+        data.push(row);
+      }
+      return { kind: 'table', mode: 'timeseries', title: 'Time Series Data', data: data, params: collectSettings() };
+    }
+
+    function generateMockMode() {
+      const rows = readPositiveInteger('mockRows', 'Mock rows');
+      assertLimit(rows, CONFIG.maxTableRows, 'Mock rows');
+      const preset = getValue('mockPreset');
+      const columns = MOCK_PRESETS[preset];
+      if (!columns) throw new Error('Unknown mock preset.');
+      const data = [];
+      for (let i = 0; i < rows; i++) {
+        const row = {};
+        columns.forEach(function (col) { row[col.name] = FieldGenerator.generate(normalizeColumn(col), i); });
+        if (preset === 'scores') addScoreSummary(row);
+        data.push(row);
+      }
+      return { kind: 'table', mode: 'mock', title: 'Mock Dataset', data: data, params: collectSettings() };
+    }
+
+    function addScoreSummary(row) {
+      const scoreKeys = Object.keys(row).filter(function (key) { return ['Math', 'English', 'Science'].includes(key); });
+      const values = scoreKeys.map(function (key) { return Number(row[key]); });
+      if (!values.length) return;
+      const avg = round(mean(values), 1);
+      row.Average = avg;
+      row.Grade = avg >= 90 ? 'A' : avg >= 80 ? 'B' : avg >= 70 ? 'C' : avg >= 60 ? 'D' : 'F';
+      row.Rank = '';
+    }
+
+    function generateMatrixMode() {
+      const rows = readPositiveInteger('matrixRows', 'Matrix rows');
+      const cols = readPositiveInteger('matrixCols', 'Matrix columns');
+      assertLimit(rows, CONFIG.maxTableRows, 'Matrix rows');
+      assertLimit(cols, CONFIG.maxTableCols, 'Matrix columns');
+      const min = readNumber('matrixMin', 'Matrix minimum');
+      const max = readNumber('matrixMax', 'Matrix maximum');
+      assertMinMax(min, max);
+      const type = getValue('matrixType');
+      const decimals = readIntegerInRange('matrixDecimals', 'Decimal places', 0, CONFIG.maxDecimals);
+      const showLabels = els.matrixLabels.checked;
+
+      const data = [];
+      for (let r = 0; r < rows; r++) {
+        const row = {};
+        if (showLabels) row.Row = 'R' + (r + 1);
+        for (let c = 0; c < cols; c++) {
+          const key = showLabels ? 'C' + (c + 1) : String(c + 1);
+          row[key] = type === 'integer' || decimals === 0
+            ? state.rng.int(Math.ceil(min), Math.floor(max))
+            : randomDecimal(min, max, decimals);
+        }
+        data.push(row);
+      }
+      return { kind: 'table', mode: 'matrix', title: 'Random Matrix', data: data, params: collectSettings() };
+    }
+
+    const FieldGenerator = {
+      generate: function (col, index) {
+        const c = normalizeColumn(col);
+        switch (c.type) {
+          case 'integer': return state.rng.int(Math.ceil(c.min), Math.floor(c.max));
+          case 'decimal': return randomDecimal(c.min, c.max, c.decimals);
+          case 'percentage': return randomDecimal(0, 100, Math.max(0, c.decimals)) + '%';
+          case 'boolean': return state.rng.int(0, 1) === 1;
+          case 'category': return choose(parseList(c.values));
+          case 'group': return choose(parseList(c.values || 'A, B, C, D'));
+          case 'id': return index + 1;
+          case 'date': return randomDateString(false);
+          case 'time': return randomTimeString();
+          case 'datetime': return randomDateString(true);
+          case 'code': return randomCode(c.prefix || '', c.length || 6);
+          case 'score': return state.rng.int(0, 100);
+          case 'normal': return round(randomNormal(c.mean, c.std), c.decimals);
+          case 'weighted': return weightedChoice(parseWeights(c.weights));
+          default: return state.rng.int(1, 100);
+        }
+      }
+    };
+
+    function normalizeColumn(col) {
+      const normalized = Object.assign({
+        name: 'Column',
+        type: 'integer',
+        min: 0,
+        max: 100,
+        decimals: 2,
+        values: 'A, B, C',
+        weights: 'A:1, B:1, C:1',
+        mean: 50,
+        std: 10,
+        prefix: '',
+        length: 6
+      }, col || {});
+      normalized.min = Number(normalized.min);
+      normalized.max = Number(normalized.max);
+      normalized.decimals = clamp(parseInt(normalized.decimals, 10) || 0, 0, CONFIG.maxDecimals);
+      normalized.mean = Number(normalized.mean) || 50;
+      normalized.std = Math.max(0.000001, Number(normalized.std) || 10);
+      return normalized;
+    }
+
+    function randomDecimal(min, max, decimals) {
+      const value = min + state.rng.unit() * (max - min);
+      return Number(value.toFixed(decimals));
+    }
+
+    function uniqueIntegers(min, max, count) {
+      const capacity = max - min + 1;
+      if (count > capacity) throw new Error('Cannot generate unique numbers because the requested count is larger than the available range.');
+      if (capacity <= 300000) {
+        const values = [];
+        for (let v = min; v <= max; v++) values.push(v);
+        shuffle(values);
+        return values.slice(0, count);
+      }
+      const set = new Set();
+      while (set.size < count) set.add(state.rng.int(min, max));
+      return Array.from(set);
+    }
+
+    function uniqueDecimals(min, max, decimals, count) {
+      const scale = Math.pow(10, decimals);
+      const scaledMin = Math.ceil(min * scale);
+      const scaledMax = Math.floor(max * scale);
+      const capacity = scaledMax - scaledMin + 1;
+      if (capacity <= 0) throw new Error('Decimal range is too small for the selected decimal places.');
+      if (count > capacity) throw new Error('Cannot generate unique decimal numbers because count exceeds displayed precision capacity.');
+      const raw = uniqueIntegers(scaledMin, scaledMax, count);
+      return raw.map(function (n) { return Number((n / scale).toFixed(decimals)); });
+    }
+
+    function randomNormal(meanValue, stdValue) {
+      let u = 0;
+      let v = 0;
+      while (u === 0) u = state.rng.unit();
+      while (v === 0) v = state.rng.unit();
+      return meanValue + stdValue * Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    }
+
+    function randomCode(prefix, length) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let out = prefix || '';
+      for (let i = 0; i < length; i++) out += chars[state.rng.int(0, chars.length - 1)];
+      return out;
+    }
+
+    function randomDateString(withTime) {
+      const start = new Date(new Date().getFullYear(), 0, 1).getTime();
+      const end = new Date(new Date().getFullYear(), 11, 31, 23, 59, 59).getTime();
+      const value = new Date(start + Math.floor(state.rng.unit() * (end - start)));
+      return withTime ? formatDateTime(value) : formatDate(value);
+    }
+
+    function randomTimeString() {
+      const h = pad(state.rng.int(0, 23));
+      const m = pad(state.rng.int(0, 59));
+      const s = pad(state.rng.int(0, 59));
+      return h + ':' + m + ':' + s;
+    }
+
+    function choose(values) {
+      if (!values.length) throw new Error('Category list cannot be empty.');
+      return values[state.rng.int(0, values.length - 1)];
+    }
+
+    function weightedChoice(items) {
+      if (!items.length) throw new Error('Weighted category cannot be empty. Use format: A:1, B:2');
+      const total = items.reduce(function (sum, item) { return sum + item.weight; }, 0);
+      if (total <= 0) throw new Error('Weighted category weights must be greater than 0.');
+      let target = state.rng.unit() * total;
+      for (const item of items) {
+        target -= item.weight;
+        if (target <= 0) return item.value;
+      }
+      return items[items.length - 1].value;
+    }
+
+    function parseWeights(text) {
+      return String(text || '').split(',').map(function (part) {
+        const pieces = part.split(':');
+        return { value: (pieces[0] || '').trim(), weight: Number((pieces[1] || '').trim()) };
+      }).filter(function (item) { return item.value && Number.isFinite(item.weight) && item.weight > 0; });
+    }
+
+    function buildColumns(count) {
+      els.tableColumns.innerHTML = '';
+      const safeCount = clamp(count || 3, 1, CONFIG.maxTableCols);
+      for (let i = 0; i < safeCount; i++) {
+        addColumnRow(DEFAULT_COLUMNS[i] || { name: 'Column ' + (i + 1), type: 'integer', min: 1, max: 100, decimals: 0, values: 'A, B, C', weights: 'A:1, B:1, C:1' });
+      }
+      setValue('tableCols', safeCount);
+    }
+
+    function addColumnRow(config) {
+      const row = document.createElement('div');
+      row.className = 'column-row';
+      row.innerHTML = [
+        '<div class="column-head">',
+        '<div><label>Column Name</label><input data-col="name" type="text"></div>',
+        '<div><label>Type</label><select data-col="type">' + FIELD_TYPES.map(function (t) { return '<option value="' + escapeHtml(t.value) + '">' + escapeHtml(t.label) + '</option>'; }).join('') + '</select></div>',
+        '<button type="button" data-remove-column class="danger">Remove</button>',
+        '</div>',
+        '<div class="column-options">',
+        '<div><label>Min</label><input data-col="min" type="number" step="any"></div>',
+        '<div><label>Max</label><input data-col="max" type="number" step="any"></div>',
+        '<div><label>Decimals</label><input data-col="decimals" type="number" min="0" max="10" step="1"></div>',
+        '<div><label>Categories</label><input data-col="values" type="text" placeholder="A, B, C"></div>',
+        '<div><label>Weights</label><input data-col="weights" type="text" placeholder="A:1, B:2"></div>',
+        '<div><label>Mean / Std</label><input data-col="normal" type="text" placeholder="50, 10"></div>',
+        '</div>'
+      ].join('');
+      els.tableColumns.appendChild(row);
+      const c = normalizeColumn(config);
+      row.querySelector('[data-col="name"]').value = c.name;
+      row.querySelector('[data-col="type"]').value = c.type;
+      row.querySelector('[data-col="min"]').value = c.min;
+      row.querySelector('[data-col="max"]').value = c.max;
+      row.querySelector('[data-col="decimals"]').value = c.decimals;
+      row.querySelector('[data-col="values"]').value = c.values;
+      row.querySelector('[data-col="weights"]').value = c.weights;
+      row.querySelector('[data-col="normal"]').value = c.mean + ', ' + c.std;
+      row.querySelector('[data-remove-column]').addEventListener('click', function () {
+        if (els.tableColumns.children.length <= 1) {
+          showMessage('At least one table column is required.', 'error');
+          return;
+        }
+        row.remove();
+        syncColumnCount();
+      });
+    }
+
+    function getColumnConfigs() {
+      return Array.from(els.tableColumns.querySelectorAll('.column-row')).map(function (row, index) {
+        const normalParts = row.querySelector('[data-col="normal"]').value.split(',').map(function (v) { return Number(v.trim()); });
+        const name = row.querySelector('[data-col="name"]').value.trim() || 'Column ' + (index + 1);
+        const type = row.querySelector('[data-col="type"]').value;
+        const min = Number(row.querySelector('[data-col="min"]').value);
+        const max = Number(row.querySelector('[data-col="max"]').value);
+        if (['integer', 'decimal'].includes(type) && (!Number.isFinite(min) || !Number.isFinite(max) || min > max)) {
+          throw new Error('Invalid min/max in column: ' + name);
+        }
+        return {
+          name: name,
+          type: type,
+          min: Number.isFinite(min) ? min : 0,
+          max: Number.isFinite(max) ? max : 100,
+          decimals: clamp(parseInt(row.querySelector('[data-col="decimals"]').value, 10) || 0, 0, CONFIG.maxDecimals),
+          values: row.querySelector('[data-col="values"]').value,
+          weights: row.querySelector('[data-col="weights"]').value,
+          mean: Number.isFinite(normalParts[0]) ? normalParts[0] : 50,
+          std: Number.isFinite(normalParts[1]) ? normalParts[1] : 10
+        };
+      });
+    }
+
+    function syncColumnCount() {
+      setValue('tableCols', els.tableColumns.children.length);
+      saveSettings(false);
+    }
+
+    function renderAll() {
+      renderPreview();
+      renderStats();
+      renderPatterns();
+      renderDistribution();
+      renderHistory();
+    }
+
+    function renderPreview() {
+      const result = state.result;
+      if (!result) return renderEmptyState();
+      const data = result.data || [];
+      const previewCount = Math.min(data.length, CONFIG.previewRows);
+      els.previewInfo.textContent = result.title + ' · Total rows/items: ' + data.length + (data.length > CONFIG.previewRows ? ' · Previewing first ' + CONFIG.previewRows + ' rows. Full data is available in downloaded file.' : '') + (result.note ? ' · ' + result.note : '');
+      if (result.kind === 'list') {
+        els.preview.innerHTML = '<div class="list-preview">' + data.slice(0, previewCount).map(function (value) {
+          return '<div class="number-pill">' + escapeHtml(formatCell(value)) + '</div>';
+        }).join('') + '</div>';
+      } else {
+        els.preview.innerHTML = renderTable(data.slice(0, previewCount));
+      }
+    }
+
+    function renderTable(rows) {
+      if (!rows.length) return '<div class="notice">No rows to display.</div>';
+      const headers = collectHeaders(rows);
+      const head = '<thead><tr>' + headers.map(function (h) { return '<th>' + escapeHtml(h) + '</th>'; }).join('') + '</tr></thead>';
+      const body = '<tbody>' + rows.map(function (row) {
+        return '<tr>' + headers.map(function (h) { return '<td>' + escapeHtml(formatCell(row[h])) + '</td>'; }).join('') + '</tr>';
+      }).join('') + '</tbody>';
+      return '<table>' + head + body + '</table>';
+    }
+
+    function renderStats() {
+      const result = state.result;
+      if (!result) {
+        els.stats.innerHTML = '<div class="stat-item"><div class="stat-label">Status</div><div class="stat-value">No data</div></div>';
+        return;
+      }
+      const numeric = extractNumericValues(result.data);
+      const stat = Stats.summary(numeric);
+      const items = stat.count ? [
+        ['Count', stat.count], ['Min', stat.min], ['Max', stat.max], ['Mean', stat.mean], ['Median', stat.median], ['Mode', stat.mode], ['Std Dev', stat.std], ['Variance', stat.variance], ['Unique', stat.unique], ['Duplicates', stat.duplicates], ['Duplicate Rate', stat.duplicateRate + '%'], ['Sum', stat.sum]
+      ] : [['Count', 0], ['Numeric Values', 'None']];
+      els.stats.innerHTML = items.map(function (item) {
+        return '<div class="stat-item"><div class="stat-label">' + escapeHtml(item[0]) + '</div><div class="stat-value">' + escapeHtml(formatCell(item[1])) + '</div></div>';
+      }).join('');
+    }
+
+    function renderPatterns() {
+      const numeric = state.result ? extractNumericValues(state.result.data) : [];
+      const analysis = PatternAnalyzer.analyze(numeric);
+      els.scoreNumber.textContent = numeric.length ? analysis.score + ' / 100' : '-- / 100';
+      els.scoreFill.style.width = (numeric.length ? analysis.score : 0) + '%';
+      els.scoreText.textContent = numeric.length ? scoreExplanation(analysis.score) : 'Generate data to evaluate visible randomness.';
+      if (!numeric.length) {
+        els.warnings.innerHTML = '<li>No data generated yet.</li>';
+      } else if (!analysis.warnings.length) {
+        els.warnings.innerHTML = '<li class="ok">No obvious pattern detected. 未检测到明显规律。</li>';
+      } else {
+        els.warnings.innerHTML = analysis.warnings.map(function (w) { return '<li class="warn">' + escapeHtml(w) + '</li>'; }).join('');
+      }
+    }
+
+    function renderDistribution() {
+      const numeric = state.result ? extractNumericValues(state.result.data) : [];
+      if (!numeric.length) {
+        els.distribution.innerHTML = '<p class="small">No numeric data.</p>';
+        return;
+      }
+      const dist = Stats.distribution(numeric, CONFIG.distributionBins);
+      const maxCount = Math.max.apply(null, dist.map(function (d) { return d.count; })) || 1;
+      els.distribution.innerHTML = dist.map(function (d) {
+        const width = Math.round((d.count / maxCount) * 100);
+        return '<div class="distribution-row"><span>' + escapeHtml(d.label) + '</span><div class="dist-track"><div class="dist-fill" style="width:' + width + '%"></div></div><span>' + d.count + '</span></div>';
+      }).join('');
+    }
+
+    function renderEmptyState() {
+      els.preview.innerHTML = '<div class="notice">No data generated yet. Choose a mode and click Generate.</div>';
+      els.previewInfo.textContent = 'No data generated yet.';
+      renderStats();
+      renderPatterns();
+      renderDistribution();
+    }
+
+    const Stats = {
+      summary: function (values) {
+        const nums = values.filter(Number.isFinite).sort(function (a, b) { return a - b; });
+        const count = nums.length;
+        if (!count) return { count: 0 };
+        const counts = new Map();
+        nums.forEach(function (v) { counts.set(v, (counts.get(v) || 0) + 1); });
+        let modeValue = nums[0];
+        let modeCount = 0;
+        counts.forEach(function (c, v) { if (c > modeCount) { modeCount = c; modeValue = v; } });
+        const total = sum(nums);
+        const avg = total / count;
+        const varianceValue = nums.reduce(function (acc, v) { return acc + Math.pow(v - avg, 2); }, 0) / count;
+        return {
+          count: count,
+          min: nums[0],
+          max: nums[count - 1],
+          mean: round(avg, 4),
+          median: round(median(nums), 4),
+          mode: modeValue,
+          std: round(Math.sqrt(varianceValue), 4),
+          variance: round(varianceValue, 4),
+          unique: counts.size,
+          duplicates: count - counts.size,
+          duplicateRate: round(((count - counts.size) / count) * 100, 2),
+          range: nums[count - 1] - nums[0],
+          sum: round(total, 4)
+        };
+      },
+      distribution: function (values, bins) {
+        const nums = values.filter(Number.isFinite);
+        if (!nums.length) return [];
+        const minValue = Math.min.apply(null, nums);
+        const maxValue = Math.max.apply(null, nums);
+        if (minValue === maxValue) return [{ label: formatCell(minValue), count: nums.length }];
+        const width = (maxValue - minValue) / bins;
+        const out = repeat(bins, function (_, i) {
+          const start = minValue + width * i;
+          const end = i === bins - 1 ? maxValue : minValue + width * (i + 1);
+          return { start: start, end: end, count: 0, label: round(start, 2) + ' - ' + round(end, 2) };
+        });
+        nums.forEach(function (v) {
+          const index = Math.min(bins - 1, Math.floor((v - minValue) / width));
+          out[index].count++;
+        });
+        return out;
+      }
+    };
+
+    const PatternAnalyzer = {
+      analyze: function (values) {
+        const nums = values.filter(Number.isFinite);
+        if (nums.length < 2) return { score: nums.length ? 90 : 0, warnings: [] };
+        const warnings = [];
+        let score = 100;
+        const repeatRun = maxRun(nums, function (a, b) { return a === b; });
+        const incRun = maxRun(nums, function (a, b) { return b > a; });
+        const decRun = maxRun(nums, function (a, b) { return b < a; });
+        const duplicateRate = duplicateRateOf(nums);
+        const clustered = maxDistributionShare(nums, CONFIG.distributionBins);
+        const diffPattern = repeatedDifferenceRun(nums);
+
+        if (repeatRun >= 3) { warnings.push('Repeated value detected: ' + repeatRun + ' repeated values in a row.'); score -= repeatRun >= 5 ? 20 : 12; }
+        if (incRun >= 4) { warnings.push('Increasing sequence detected: ' + incRun + ' values in a row.'); score -= incRun >= 6 ? 20 : 12; }
+        if (decRun >= 4) { warnings.push('Decreasing sequence detected: ' + decRun + ' values in a row.'); score -= decRun >= 6 ? 20 : 12; }
+        if (duplicateRate > 0.45 && nums.length >= 10) { warnings.push('Duplicate rate is higher than expected: ' + round(duplicateRate * 100, 2) + '%.'); score -= duplicateRate > 0.65 ? 20 : 12; }
+        if (clustered > 0.55 && nums.length >= 10) { warnings.push('Values are concentrated in one range: ' + round(clustered * 100, 2) + '%.'); score -= clustered > 0.75 ? 20 : 12; }
+        if (diffPattern >= 4) { warnings.push('Repeated difference pattern detected: ' + diffPattern + ' consecutive equal differences.'); score -= diffPattern >= 6 ? 15 : 10; }
+
+        score = clamp(Math.round(score), 0, 100);
+        return { score: score, warnings: warnings };
+      }
+    };
+
+    function maxRun(values, predicate) {
+      let best = 1;
+      let current = 1;
+      for (let i = 1; i < values.length; i++) {
+        if (predicate(values[i - 1], values[i])) current++;
+        else current = 1;
+        if (current > best) best = current;
+      }
+      return best;
+    }
+
+    function repeatedDifferenceRun(values) {
+      if (values.length < 4) return 0;
+      let best = 1;
+      let current = 1;
+      let previous = round(values[1] - values[0], 10);
+      for (let i = 2; i < values.length; i++) {
+        const diff = round(values[i] - values[i - 1], 10);
+        if (diff === previous) current++;
+        else current = 1;
+        previous = diff;
+        if (current > best) best = current;
+      }
+      return best;
+    }
+
+    function duplicateRateOf(values) {
+      return 1 - new Set(values).size / values.length;
+    }
+
+    function maxDistributionShare(values, bins) {
+      const dist = Stats.distribution(values, bins);
+      if (!dist.length) return 0;
+      return Math.max.apply(null, dist.map(function (d) { return d.count; })) / values.length;
+    }
+
+    function scoreExplanation(score) {
+      if (score >= 90) return 'The generated data appears very random with no strong visible pattern.';
+      if (score >= 70) return 'The generated data is mostly random-looking with minor visible imbalance.';
+      if (score >= 50) return 'Some visible patterns or distribution imbalance may exist.';
+      return 'Strong visible patterns or abnormal distribution may exist.';
+    }
+
+    function extractNumericValues(data) {
+      if (!Array.isArray(data)) return [];
+      const out = [];
+      data.forEach(function (item) {
+        if (typeof item === 'number' && Number.isFinite(item)) out.push(item);
+        else if (item && typeof item === 'object') {
+          Object.keys(item).forEach(function (key) {
+            const value = item[key];
+            if (typeof value === 'number' && Number.isFinite(value)) out.push(value);
+            else if (typeof value === 'string' && value.trim() !== '' && !value.includes('%')) {
+              const n = Number(value);
+              if (Number.isFinite(n)) out.push(n);
+            }
+          });
+        }
+      });
+      return out;
+    }
+
+    function copyResult() {
+      try {
+        ensureResult();
+        const text = Exporter.toText(state.hiddenLottery || state.result, 'copy');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () { showMessage('Copied. 已复制。', 'success'); }).catch(fallbackCopy.bind(null, text));
+        } else {
+          fallbackCopy(text);
+        }
+      } catch (err) {
+        showMessage(err.message || String(err), 'error');
+      }
+    }
+
+    function fallbackCopy(text) {
+      const area = document.createElement('textarea');
+      area.value = text;
+      area.setAttribute('readonly', '');
+      area.style.position = 'fixed';
+      area.style.left = '-9999px';
+      document.body.appendChild(area);
+      area.select();
+      try {
+        document.execCommand('copy');
+        showMessage('Copied. 已复制。', 'success');
+      } catch (err) {
+        showMessage('Copy failed. Please select the result manually.', 'error');
+      }
+      document.body.removeChild(area);
+    }
+
+    function downloadResult(format) {
+      try {
+        ensureResult();
+        const result = state.hiddenLottery || state.result;
+        const content = Exporter.toText(result, format);
+        const mime = format === 'json' ? 'application/json;charset=utf-8' : format === 'csv' ? 'text/csv;charset=utf-8' : 'text/plain;charset=utf-8';
+        const blob = new Blob([content], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filenameFor(result, format);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showMessage('Download started. 已开始下载。', 'success');
+      } catch (err) {
+        showMessage(err.message || String(err), 'error');
+      }
+    }
+
+    const Exporter = {
+      toText: function (result, format) {
+        if (format === 'json') return JSON.stringify(result.data, null, 2);
+        if (format === 'csv') return result.kind === 'list' ? listToCsv(result.data) : tableToCsv(result.data);
+        if (format === 'copy') return result.kind === 'list' ? result.data.join('\n') : tableToTsv(result.data);
+        return result.kind === 'list' ? result.data.join('\n') : tableToTsv(result.data);
+      }
+    };
+
+    function listToCsv(values) {
+      return ['Value'].concat(values.map(csvEscape)).join('\n');
+    }
+
+    function tableToCsv(rows) {
+      if (!rows.length) return '';
+      const headers = collectHeaders(rows);
+      const lines = [headers.map(csvEscape).join(',')];
+      rows.forEach(function (row) { lines.push(headers.map(function (h) { return csvEscape(row[h]); }).join(',')); });
+      return lines.join('\n');
+    }
+
+    function tableToTsv(rows) {
+      if (!rows.length) return '';
+      const headers = collectHeaders(rows);
+      const lines = [headers.join('\t')];
+      rows.forEach(function (row) { lines.push(headers.map(function (h) { return formatCell(row[h]); }).join('\t')); });
+      return lines.join('\n');
+    }
+
+    function csvEscape(value) {
+      const str = formatCell(value);
+      if (/[",\n\r]/.test(str)) return '"' + str.replace(/"/g, '""') + '"';
+      return str;
+    }
+
+    function filenameFor(result, format) {
+      const stamp = new Date().toISOString().slice(0, 10);
+      const baseByMode = {
+        number: 'chaosgrid_numbers',
+        table: 'chaosgrid_table',
+        group: 'chaosgrid_group_assignment',
+        lottery: 'chaosgrid_lottery',
+        timeseries: 'chaosgrid_time_series',
+        mock: 'chaosgrid_mock_dataset',
+        matrix: 'chaosgrid_matrix'
+      };
+      return (baseByMode[result.mode] || 'chaosgrid_data') + '_' + stamp + '.' + format;
+    }
+
+    function ensureResult() {
+      if (!state.result && !state.hiddenLottery) throw new Error('No generated result yet.');
+    }
+
+    function clearResult() {
+      state.result = null;
+      state.hiddenLottery = null;
+      els.revealBtn.classList.add('hidden');
+      renderEmptyState();
+      showMessage('Result cleared. 参数已保留。', '');
+    }
+
+    function saveHistory(result) {
+      if (!result) return;
+      const item = {
+        time: new Date().toISOString(),
+        mode: result.mode,
+        title: result.title,
+        count: Array.isArray(result.data) ? result.data.length : 0,
+        sample: Array.isArray(result.data) ? result.data.slice(0, 5) : [],
+        params: result.params
+      };
+      state.history.unshift(item);
+      state.history = state.history.slice(0, CONFIG.maxHistory);
+      localStorage.setItem(CONFIG.storageKeys.history, JSON.stringify(state.history));
+      renderHistory();
+    }
+
+    function loadHistory() {
+      try {
+        state.history = JSON.parse(localStorage.getItem(CONFIG.storageKeys.history) || '[]');
+        if (!Array.isArray(state.history)) state.history = [];
+      } catch (err) {
+        state.history = [];
+      }
+    }
+
+    function renderHistory() {
+      if (!state.history.length) {
+        els.history.innerHTML = '<p class="small">No history yet.</p>';
+        return;
+      }
+      els.history.innerHTML = state.history.map(function (item) {
+        const time = new Date(item.time).toLocaleString();
+        return '<div class="stat-item" style="margin-bottom:8px;"><div class="stat-label">' + escapeHtml(time) + '</div><div class="stat-value">' + escapeHtml(item.title || item.mode) + '</div><div class="small">Rows/items: ' + escapeHtml(item.count) + '</div></div>';
+      }).join('');
+    }
+
+    function clearHistory() {
+      state.history = [];
+      localStorage.removeItem(CONFIG.storageKeys.history);
+      renderHistory();
+      showMessage('History cleared.', 'success');
+    }
+
+    function collectSettings() {
+      const ids = [
+        'mode', 'randomSource', 'seedInput', 'humanLike', 'numberKind', 'count', 'min', 'max', 'decimals', 'allowDuplicates', 'sortOutput', 'shuffleOutput', 'showIndex',
+        'tableRows', 'tableCols', 'tableAddId', 'tableAddTimestamp', 'participantCount', 'groupCount', 'groupNames', 'balancedGroups', 'shuffleGroups',
+        'lotteryMin', 'lotteryMax', 'winnerCount', 'backupCount', 'lotteryUnique', 'lotterySort', 'hideLottery', 'tsStart', 'tsRows', 'tsInterval', 'tsMin', 'tsMax', 'tsDecimals', 'tsValueName',
+        'mockRows', 'mockPreset', 'matrixRows', 'matrixCols', 'matrixMin', 'matrixMax', 'matrixType', 'matrixDecimals', 'matrixLabels'
+      ];
+      const settings = {};
+      ids.forEach(function (id) {
+        const el = els[id];
+        if (!el) return;
+        settings[id] = el.type === 'checkbox' ? el.checked : el.value;
+      });
+      settings.theme = document.documentElement.getAttribute('data-theme') || 'light';
+      settings.columns = getColumnConfigsSafe();
+      return settings;
+    }
+
+    function getColumnConfigsSafe() {
+      try { return getColumnConfigs(); } catch (err) { return []; }
+    }
+
+    function saveSettings(showNotice) {
+      try {
+        localStorage.setItem(CONFIG.storageKeys.settings, JSON.stringify(collectSettings()));
+        if (showNotice) showMessage('Settings saved locally. 设置已保存在本地浏览器。', 'success');
+      } catch (err) {
+        if (showNotice) showMessage('Failed to save settings locally.', 'error');
+      }
+    }
+
+    function loadSettings() {
+      try {
+        const raw = localStorage.getItem(CONFIG.storageKeys.settings);
+        if (!raw) {
+          document.documentElement.setAttribute('data-theme', 'light');
+          return;
+        }
+        const settings = JSON.parse(raw);
+        Object.keys(settings).forEach(function (id) {
+          if (id === 'theme' || id === 'columns') return;
+          const el = els[id];
+          if (!el) return;
+          if (el.type === 'checkbox') el.checked = !!settings[id];
+          else el.value = settings[id];
+        });
+        document.documentElement.setAttribute('data-theme', settings.theme || 'light');
+        updateThemeButton();
+        if (Array.isArray(settings.columns) && settings.columns.length) {
+          els.tableColumns.innerHTML = '';
+          settings.columns.forEach(addColumnRow);
+          syncColumnCount();
+        }
+      } catch (err) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    }
+
+    function resetSettings() {
+      localStorage.removeItem(CONFIG.storageKeys.settings);
+      setValue('mode', 'number');
+      setValue('randomSource', 'secure');
+      setValue('seedInput', '');
+      els.humanLike.checked = false;
+      setValue('numberKind', 'integer');
+      setValue('count', 10);
+      setValue('min', 1);
+      setValue('max', 100);
+      setValue('decimals', 2);
+      els.allowDuplicates.checked = true;
+      els.sortOutput.checked = false;
+      els.shuffleOutput.checked = false;
+      els.showIndex.checked = false;
+      setValue('tableRows', 10);
+      setValue('tableCols', 3);
+      els.tableAddId.checked = true;
+      els.tableAddTimestamp.checked = false;
+      buildColumns(3);
+      setValue('participantCount', 10);
+      setValue('groupCount', 2);
+      setValue('groupNames', 'A, B, C, D');
+      els.balancedGroups.checked = true;
+      els.shuffleGroups.checked = true;
+      setValue('lotteryMin', 1);
+      setValue('lotteryMax', 100);
+      setValue('winnerCount', 5);
+      setValue('backupCount', 0);
+      els.lotteryUnique.checked = true;
+      els.lotterySort.checked = false;
+      els.hideLottery.checked = false;
+      setDefaultDateTime();
+      setValue('tsRows', 24);
+      setValue('tsInterval', 60);
+      setValue('tsMin', 0);
+      setValue('tsMax', 100);
+      setValue('tsDecimals', 0);
+      setValue('tsValueName', 'Value');
+      setValue('mockRows', 20);
+      setValue('mockPreset', 'users');
+      setValue('matrixRows', 3);
+      setValue('matrixCols', 3);
+      setValue('matrixMin', 0);
+      setValue('matrixMax', 99);
+      setValue('matrixType', 'integer');
+      setValue('matrixDecimals', 2);
+      els.matrixLabels.checked = false;
+      applyModeVisibility();
+      updateSeedVisibility();
+      updateRandomSourceNotice();
+      saveSettings(false);
+      clearResult();
+      showMessage('Settings reset to defaults. 参数已恢复默认。', 'success');
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+      updateThemeButton();
+      saveSettings(false);
+    }
+
+    function updateThemeButton() {
+      const theme = document.documentElement.getAttribute('data-theme') || 'light';
+      els.themeBtn.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
+    }
+
+    function applyTemplate(name) {
+      const templates = {
+        quick: function () { setValue('mode', 'number'); setValue('numberKind', 'integer'); setValue('min', 1); setValue('max', 100); setValue('count', 10); els.allowDuplicates.checked = true; setValue('randomSource', 'secure'); },
+        unique: function () { setValue('mode', 'number'); setValue('numberKind', 'integer'); setValue('min', 1); setValue('max', 100); setValue('count', 10); els.allowDuplicates.checked = false; },
+        lottery6: function () { setValue('mode', 'lottery'); setValue('lotteryMin', 1); setValue('lotteryMax', 49); setValue('winnerCount', 6); setValue('backupCount', 0); els.lotteryUnique.checked = true; els.lotterySort.checked = true; },
+        scores: function () { setValue('mode', 'mock'); setValue('mockPreset', 'scores'); setValue('mockRows', 30); },
+        ab: function () { setValue('mode', 'group'); setValue('participantCount', 100); setValue('groupCount', 2); setValue('groupNames', 'A, B'); els.balancedGroups.checked = true; },
+        matrix: function () { setValue('mode', 'matrix'); setValue('matrixRows', 10); setValue('matrixCols', 10); setValue('matrixMin', 0); setValue('matrixMax', 99); setValue('matrixType', 'integer'); },
+        timeseries: function () { setValue('mode', 'timeseries'); setValue('tsRows', 24); setValue('tsInterval', 60); setValue('tsMin', 0); setValue('tsMax', 100); setValue('tsDecimals', 0); setValue('tsValueName', 'Value'); setDefaultDateTime(); },
+        orders: function () { setValue('mode', 'mock'); setValue('mockPreset', 'orders'); setValue('mockRows', 100); },
+        survey: function () { setValue('mode', 'mock'); setValue('mockPreset', 'survey'); setValue('mockRows', 100); },
+        normal: function () { setValue('mode', 'table'); setValue('tableRows', 100); setValue('tableCols', 1); els.tableAddId.checked = false; els.tableAddTimestamp.checked = false; els.tableColumns.innerHTML = ''; addColumnRow({ name: 'NormalValue', type: 'normal', min: 0, max: 100, decimals: 2, values: 'A, B, C', weights: 'A:1, B:1, C:1', mean: 50, std: 10 }); }
+      };
+      if (templates[name]) templates[name]();
+      applyModeVisibility();
+      updateSeedVisibility();
+      updateRandomSourceNotice();
+      saveSettings(false);
+      showMessage('Template applied. 模板已应用。', 'success');
+    }
+
+    function readNumber(id, name) {
+      const value = Number(getValue(id));
+      if (!Number.isFinite(value)) throw new Error(name + ' must be a valid number.');
+      return value;
+    }
+
+    function readInteger(id, name) {
+      const value = readNumber(id, name);
+      if (!Number.isInteger(value)) throw new Error(name + ' must be an integer.');
+      return value;
+    }
+
+    function readPositiveInteger(id, name) {
+      const value = readInteger(id, name);
+      if (value <= 0) throw new Error(name + ' must be greater than 0.');
+      return value;
+    }
+
+    function readNonNegativeInteger(id, name) {
+      const value = readInteger(id, name);
+      if (value < 0) throw new Error(name + ' must be 0 or greater.');
+      return value;
+    }
+
+    function readIntegerInRange(id, name, min, max) {
+      const value = readInteger(id, name);
+      if (value < min || value > max) throw new Error(name + ' must be between ' + min + ' and ' + max + '.');
+      return value;
+    }
+
+    function assertMinMax(min, max) {
+      if (min > max) throw new Error('Minimum value must be less than or equal to maximum value. 最小值不能大于最大值。');
+    }
+
+    function assertLimit(value, limit, name) {
+      if (value > limit) throw new Error(name + ' is too large. Maximum allowed value is ' + limit + '.');
+    }
+
+    function collectHeaders(rows) {
+      const set = new Set();
+      rows.forEach(function (row) { Object.keys(row).forEach(function (key) { set.add(key); }); });
+      return Array.from(set);
+    }
+
+    function repeat(count, fn) {
+      const out = [];
+      for (let i = 0; i < count; i++) out.push(fn(i, i));
+      return out;
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = state.rng.int(0, i);
+        const tmp = array[i];
+        array[i] = array[j];
+        array[j] = tmp;
+      }
+      return array;
+    }
+
+    function sum(values) { return values.reduce(function (a, b) { return a + b; }, 0); }
+    function mean(values) { return values.length ? sum(values) / values.length : 0; }
+    function median(sorted) { const mid = Math.floor(sorted.length / 2); return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2; }
+    function round(value, places) { const p = Math.pow(10, places); return Math.round((value + Number.EPSILON) * p) / p; }
+    function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function parseList(text) {
+      return String(text || '').split(',').map(function (v) { return v.trim(); }).filter(Boolean);
+    }
+
+    function formatDate(date) {
+      return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
+    }
+
+    function formatDateTime(date) {
+      return formatDate(date) + ' ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+    }
+
+    function setDefaultDateTime() {
+      const d = new Date();
+      d.setSeconds(0, 0);
+      if (els.tsStart) els.tsStart.value = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    }
+
+    function formatCell(value) {
+      if (value === null || value === undefined) return '';
+      if (typeof value === 'number') return Number.isInteger(value) ? String(value) : String(value);
+      return String(value);
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"]/g, function (ch) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch];
+      });
+    }
+
+    function getValue(id) { return els[id] ? els[id].value : ''; }
+    function setValue(id, value) { if (els[id]) els[id].value = value; }
+
+    function showMessage(text, type) {
+      els.message.textContent = text;
+      els.message.className = 'notice' + (type ? ' ' + type : '');
+    }
+
+    function debounce(fn, wait) {
+      let timer;
+      return function () {
+        const args = arguments;
+        clearTimeout(timer);
+        timer = setTimeout(function () { fn.apply(null, args); }, wait);
+      };
+    }
+  })();
+  </script>
+</body>
+</html>
