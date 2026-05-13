@@ -615,8 +615,6 @@ ChaosGrid 适合：
 
 ## 📄 License
 
-推荐使用 MIT License。
-
 ```text
 MIT License
 
