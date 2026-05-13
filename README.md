@@ -1,817 +1,636 @@
-# ChaosGrid
+# 🎲 ChaosGrid
 
-> Offline Random Number & Table Generator  
-> 完全离线运行的随机数、随机表格、随机分组与模拟数据生成器
+<p align="center">
+  <strong>完全离线随机数与随机表格生成器</strong><br>
+  Offline Random Number & Random Table Generator
+</p>
 
-ChaosGrid 是一个纯前端、完全离线运行的随机数据生成工具。用户只需要打开一个本地 `index.html` 文件，就可以在浏览器中生成随机整数、随机小数、不重复随机数、随机表格、随机分组、抽奖号码、时间序列数据、模拟测试数据和随机矩阵，并支持 CSV、TXT、JSON 导出。
-
-本项目默认使用浏览器内置的 Web Crypto API 作为随机源，而不是普通的 `Math.random()`，以提高随机结果的不可预测性。同时，系统提供 Seed Mode 用于可复现实验，也提供 Human-like Mode 用于减少人眼容易察觉的明显规律。
-
----
-
-## Project Highlights
-
-- Fully offline: no server, no database, no login, no network request
-- Single-file deployment: open `index.html` directly in a browser
-- Secure random source: uses Web Crypto API by default
-- Reproducible generation: Seed Mode supports repeatable results
-- Human-like random mode: reduces obvious visible patterns
-- Multiple generation modes: numbers, tables, groups, lottery, time series, mock data, matrix
-- Data export: CSV, TXT, and JSON
-- Statistics summary: mean, median, standard deviation, duplicate rate, unique count, and more
-- Pattern detection: repeated values, increasing/decreasing runs, fixed differences, clustering
-- Randomness score: visual randomness score from 0 to 100
-- Local settings: saves user preferences with `localStorage`
-- Dark mode and language switch: supports light/dark theme and Chinese/English switching
-- Privacy-first: all data is generated and processed locally in the browser
+<p align="center">
+  <img alt="Version" src="https://img.shields.io/badge/version-v0.5.1-blue">
+  <img alt="Offline" src="https://img.shields.io/badge/offline-ready-brightgreen">
+  <img alt="Single File" src="https://img.shields.io/badge/single--file-HTML-orange">
+  <img alt="Privacy" src="https://img.shields.io/badge/privacy-local--only-purple">
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-lightgrey">
+</p>
 
 ---
 
-## Demo Usage
+## ✨ 项目简介
 
-1. Download or save `index.html`.
-2. Open it directly with Chrome, Edge, Firefox, or Safari.
-3. Select a generation mode.
-4. Configure the parameters.
-5. Click Generate.
-6. Preview the result, check statistics, then copy or download the data.
+ChaosGrid 是一个使用 HTML、CSS 和 JavaScript 构建的完全离线随机数据生成工具。
 
-No installation is required. No Node.js, server, database, or internet connection is needed.
+它不需要服务器、不需要数据库、不需要登录、不需要网络连接。用户只要打开一个本地 HTML 文件，就可以生成随机数、随机表格、随机分组、抽奖结果、时间序列、模拟数据集、矩阵数据和概率模型模拟结果，并导出为 CSV、TXT、JSON、XLSX 等格式。
 
----
+ChaosGrid 默认使用浏览器的 Web Crypto API 作为随机源，比普通 Math.random 更适合需要较高不可预测性的普通随机数据场景。同时，它也提供 Seed Mode，用于可复现实验、教学演示和测试数据复现。
 
-## Core Features
-
-### 1. Single Number List
-
-Generate a list of random numbers with configurable rules.
-
-Supported options:
-
-- Integer or decimal output
-- Minimum and maximum value
-- Number count
-- Decimal places
-- Allow or disallow duplicates
-- Sort output
-- Shuffle output
-- Show index column
-
-Example output:
-
-```text
-23
-88
-4
-61
-39
-72
-10
-95
-41
-7
-```
-
-Use cases:
-
-- Random sampling
-- Lottery preparation
-- Teaching examples
-- Test input generation
-- Random ID or number list generation
+> 注意：ChaosGrid 不是物理真随机数发生器，也不应作为加密密钥或高风险安全系统的唯一随机来源。
 
 ---
 
-### 2. Secure Random Integer Generator
+## 🚀 当前版本
 
-ChaosGrid uses `window.crypto.getRandomValues()` by default when the browser supports it.
+当前版本：v0.5.1 Bugfix Edition
 
-For integer generation, the system avoids simple modulo mapping and uses rejection sampling to reduce modulo bias.
-
-This makes the random source stronger than ordinary `Math.random()` for general random data generation tasks.
-
-Important note:
-
-ChaosGrid is not a cryptographic key generator. It should not be used as the only source for high-stakes security or cryptographic key generation.
+v0.5.1 修复了 Data Quality 中 Duplicate Row Rate 导致 ID / Index / Participant ID 序号错乱的问题。现在重复行仍然可以模拟重复数据，但显示用序号会保持连续、可读、可导出。
 
 ---
 
-### 3. Decimal Random Generator
+## 🧩 核心功能总览
 
-Generate decimal values within a custom range.
+### 🎯 随机数生成
 
-Supported options:
+- 生成整数
+- 生成小数
+- 设置最小值、最大值、数量
+- 设置小数位数
+- 允许或禁止重复
+- 排序输出
+- 打乱输出
+- 显示序号列
+- 支持大批量生成
 
-- Minimum value
-- Maximum value
-- Count
-- Decimal places from 0 to 10
-- Duplicate control
-- Sorting
+### 🔐 随机源选择
 
-Example:
+- Secure Crypto Random：默认模式，使用 Web Crypto API
+- Seed Mode：相同 seed + 相同参数可复现相同结果
+- Fallback Random：兼容模式，用于不支持 Web Crypto 的浏览器
 
-```text
-0.4821
-0.0392
-0.7740
-0.6105
-0.2217
-```
+### 🧠 Human-like No Obvious Pattern Mode
 
-When decimal places are set to 0, the result behaves like integer generation.
+用于减少人眼容易察觉的明显规律，例如：
 
----
+- 连续重复
+- 连续递增
+- 连续递减
+- 固定差值
+- 重复率过高
+- 区间过度集中
 
-### 4. Unique Random Number Generator
-
-When duplicate values are disabled, ChaosGrid generates values without repetition.
-
-For integers, it checks whether the requested count exceeds the available range.
-
-Example:
-
-```text
-Range: 1 to 100
-Count: 10
-Duplicate: Disabled
-```
-
-The output will contain 10 different numbers.
-
-If the user requests 200 unique values from a range of 1 to 100, the system shows a clear validation error.
+该模式只是让结果在视觉上更不容易看出规律，不代表数学上更随机。
 
 ---
 
-### 5. Seed Mode
+## 📊 支持的生成模式
 
-Seed Mode allows reproducible random generation.
+### 1. 🔢 Single Number List
 
-Rules:
+生成一列随机数字。
 
-- Same seed + same parameters = same result
-- Different seed usually produces different result
-- Useful for teaching, experiments, testing, and debugging
-- Not suitable for security-sensitive random generation
+适合：
 
-Example:
+- 随机编号
+- 抽样数字
+- 测试输入
+- 简单随机数列表
 
-```text
-Seed: experiment-001
-Mode: Integer
-Range: 1 to 100
-Count: 10
-```
+### 2. 📋 Random Table
 
-Running the same setup again produces the same random sequence.
+生成多行多列随机表格。
 
----
+支持字段类型：
 
-### 6. Human-like No Obvious Pattern Mode
+- Integer
+- Decimal
+- Percentage
+- Boolean
+- Category
+- Group
+- ID
+- Date
+- Time
+- DateTime
+- Random Code
+- Score
+- Normal Distribution Number
+- Weighted Category
 
-Human-like Mode reduces patterns that are easy for humans to notice.
+支持快速字段：
 
-The system checks and reduces:
+- User ID
+- Order ID
+- Price
+- Age
+- Score
+- Status
+- Risk Level
+- Rating
+- Created Time
 
-- Long repeated values
-- Long increasing sequences
-- Long decreasing sequences
-- Repeated fixed differences
-- High duplicate rate
-- Over-concentrated distribution
-- Visually unnatural clusters
+### 3. 👥 Group Assignment
 
-Important note:
+随机分组工具。
 
-Human-like Mode does not make the data mathematically more random. It only reduces obvious visual patterns.
+支持：
 
----
+- 输入参与者数量
+- 输入组数和组名
+- 平均分配
+- 打乱参与者
+- 粘贴真实参与者名单
+- 导出分组结果
 
-### 7. Random Table Generator
+适合课堂分组、实验组分配、A/B 测试、比赛分队。
 
-Generate structured random tables with custom rows and columns.
+### 4. 🎟️ Lottery Mode
 
-Supported options:
+抽奖号码生成工具。
 
-- Row count
-- Column count
-- Custom column names
-- Custom column types
-- Add ID column
-- Add timestamp column
-- Preview first 100 rows for large datasets
-- Download full data as CSV, TXT, or JSON
+支持：
 
-Example:
+- 设置号码范围
+- 设置中奖数量
+- 设置备用号码数量
+- 不重复中奖号码
+- 排序中奖号码
+- 隐藏结果直到点击 Reveal
+- 中奖号码卡片展示
+- Range Position Chart 展示中奖号码在范围内的位置
 
-```csv
-ID,Score,Age,Group
-1,87,20,A
-2,64,23,B
-3,91,19,A
-4,72,25,C
-5,80,21,B
-```
+### 5. ⏱️ Time Series Mode
 
----
+生成时间序列数据。
 
-## Supported Table Field Types
+支持：
 
-ChaosGrid supports many field types for random table generation.
+- 开始时间
+- 行数
+- 时间间隔
+- 数值范围
+- 小数位数
+- 自定义数值列名
+- 趋势：None / Upward / Downward
+- 季节性：None / Daily Wave / Weekly Wave
+- 噪声强度
+- 尖峰比例
 
-| Field Type | Description |
-|---|---|
-| Integer | Random integer in a custom range |
-| Decimal | Random decimal with custom precision |
-| Percentage | Random percentage from 0% to 100% |
-| Boolean | Random true or false |
-| Category | Random value from a custom category list |
-| Group | Random group label such as A, B, C, D |
-| ID | Auto-incrementing ID |
-| Date | Random date |
-| Time | Random time |
-| DateTime | Random date and time |
-| Random Code | Random alphanumeric code |
-| Score | Random score from 0 to 100 |
-| Normal Distribution Number | Approximate normal-distribution value |
-| Weighted Category | Random category based on custom weights |
+适合图表测试、传感器数据模拟、价格数据模拟、机器学习练习数据。
 
----
+### 6. 🧪 Mock Dataset Mode
 
-### 8. Random Group Assignment
+生成结构化模拟数据集。
 
-Randomly assign participants into groups.
-
-Supported options:
-
-- Participant count
-- Group count
-- Custom group names
-- Balanced assignment
-- Shuffle participants
-- Export group table
-
-Example:
-
-```csv
-Participant ID,Group
-1,A
-2,B
-3,B
-4,A
-5,A
-```
-
-Use cases:
-
-- Classroom grouping
-- Experiment/control group assignment
-- Team allocation
-- A/B test simulation
-
----
-
-### 9. Lottery Mode
-
-Generate winner numbers for lottery or draw scenarios.
-
-Supported options:
-
-- Number range
-- Winner count
-- Backup count
-- Unique winners
-- Sort winners
-- Hide result until Reveal
-
-Example:
-
-```text
-Winners: 7, 28, 44, 63, 91
-Backups: 12, 37
-```
-
-Use cases:
-
-- Prize draw
-- Random selection
-- Lucky number generation
-- Backup winner list
-
----
-
-### 10. Time Series Mode
-
-Generate random time-series data with a time column.
-
-Supported options:
-
-- Start datetime
-- Row count
-- Time interval in minutes
-- Value range
-- Decimal places
-- Custom value column name
-
-Example:
-
-```csv
-Time,Value
-2026-01-01 00:00,82
-2026-01-01 01:00,79
-2026-01-01 02:00,91
-```
-
-Use cases:
-
-- Sensor data simulation
-- Price data simulation
-- Temperature data simulation
-- Chart testing
-- Machine learning practice data
-
----
-
-### 11. Mock Dataset Mode
-
-Generate realistic-looking but completely fake test data.
-
-Built-in presets:
+内置模板：
 
 - Mock Users
 - Mock Orders
 - Survey Dataset
 - Student Scores
 
-Example fields:
+适合前端表格测试、后端接口 mock、数据库导入测试、Excel 练习和数据分析练习。
 
-- user_id
-- order_id
-- age
-- score
-- price
-- quantity
-- rating
-- group
-- status
-- percentage
-- risk_score
-- created_time
+### 7. 🧮 Random Matrix
 
-Use cases:
+生成随机矩阵。
 
-- Frontend table testing
-- Backend mock API testing
-- Database import testing
-- Data analysis practice
-- CSV/JSON demo data generation
+支持：
 
----
+- 行数
+- 列数
+- 最小值
+- 最大值
+- 整数或小数
+- 行列标签
+- 热力图可视化
 
-### 12. Random Matrix Generator
+适合数学练习、算法测试、线性代数演示、机器学习矩阵输入。
 
-Generate an `m × n` random matrix.
+### 8. 🎲 Probability Model Mode
 
-Supported options:
+概率模型模拟器。
 
-- Row count
-- Column count
-- Minimum value
-- Maximum value
-- Integer or decimal type
-- Decimal places
-- Optional row and column labels
+支持模型：
 
-Example:
+- Coin Toss
+- Dice Roll
+- Weighted Outcome
+- Bernoulli Trial
+- Binomial Experiment
+- Multinomial Experiment
+- Card Draw / Gacha
+- Rare Event
+- Poisson Event Count
+- Custom Scenario
 
-```text
-12,44,8
-91,27,65
-33,72,10
-```
-
-Use cases:
-
-- Mathematics practice
-- Algorithm testing
-- Linear algebra examples
-- Machine learning input simulation
+可以对比理论概率和实际频率，并显示偏差图表。
 
 ---
 
-## Templates
+## 📈 图表与分析
 
-ChaosGrid includes one-click templates for common tasks.
+ChaosGrid 内置 Charts Dashboard，用于直观理解生成结果。
 
-| Template | Purpose |
-|---|---|
-| Quick 10 Numbers | Generate 10 random integers from 1 to 100 |
-| Unique Draw | Generate unique random values |
-| Lottery 6 | Generate 6 unique lottery numbers from 1 to 49 |
-| Student Scores | Generate student score dataset |
-| A/B Groups | Generate A/B test group assignment |
-| Matrix 10×10 | Generate a 10 by 10 random matrix |
-| Time Series | Generate 24 hourly time-series rows |
-| Mock Orders | Generate mock order data |
-| Survey | Generate survey-style dataset |
-| Normal Sample | Generate normal-distribution sample data |
+图表全部采用纵向排列，一张一张往下显示，避免并排导致看不全。
+
+支持的图表包括：
+
+- Distribution Histogram
+- Sorted Value Strip
+- Numeric Column Means
+- Category Frequency
+- Expected vs Observed Counts
+- Deviation from Expectation
+- Time Series Line Chart
+- Matrix Heatmap
+- Group Balance Chart
+- Lottery Result Cards
+- Range Position Chart
+
+每个图表尽量包含：
+
+- 标题
+- 简短解释
+- 数据标签
+- 坐标或图例
+- 自动分析说明
+- SVG / PNG 导出
 
 ---
 
-## Statistics Summary
+## 📐 数据预览与 DataGrid 功能
 
-After data generation, ChaosGrid automatically calculates numeric statistics.
+结果预览区支持更接近专业 DataGrid 的操作：
 
-For number lists and numeric table fields, it can display:
+- 搜索结果
+- 分页显示
+- 每页行数选择
+- 点击表头排序
+- 显示或隐藏列
+- 筛选后导出 CSV
+- 大数据只预览部分行，完整数据仍可下载
+
+这使 ChaosGrid 不只是生成数据，也可以快速检查数据是否合理。
+
+---
+
+## 🧾 统计摘要与质量检测
+
+生成数据后，系统会自动计算统计信息：
 
 - Count
-- Minimum
-- Maximum
+- Min
+- Max
 - Mean
 - Median
 - Mode
-- Standard deviation
+- Standard Deviation
 - Variance
-- Unique count
-- Duplicate count
-- Duplicate rate
+- Unique Count
+- Duplicate Count
+- Duplicate Rate
 - Sum
-- Distribution summary
 
-These statistics help users quickly understand whether the generated data is reasonable.
+同时提供：
 
----
-
-## Pattern Detection
-
-ChaosGrid checks generated data for visible patterns.
-
-Detected pattern types:
-
-- Repeated values in a row
-- Increasing sequences
-- Decreasing sequences
-- Repeated difference patterns
-- High duplicate rate
-- Concentrated value distribution
-
-Example warnings:
-
-```text
-Repeated value detected.
-Increasing sequence detected.
-Repeated difference pattern detected.
-Values are concentrated in one range.
-```
-
-If no obvious pattern is detected, ChaosGrid displays a positive message.
+- Randomness Score
+- Pattern Warning
+- Distribution Summary
+- Probability Deviation Warning
+- Report Tab
+- Generate Report
+- Copy Report
 
 ---
 
-## Randomness Score
+## 🧬 Advanced Data Quality
 
-ChaosGrid provides a visual randomness score from 0 to 100.
+ChaosGrid 支持模拟真实世界数据中的质量问题：
 
-Score interpretation:
+- Missing Value Rate
+- Duplicate Row Rate
+- Outlier Rate
+- Null Format：empty / null / N/A
 
-| Score | Meaning |
-|---|---|
-| 90 - 100 | Very random-looking, no strong visible pattern |
-| 70 - 89 | Mostly random-looking, with small visible imbalance |
-| 50 - 69 | Some visible patterns or distribution imbalance |
-| 0 - 49 | Strong visible pattern or abnormal distribution |
+用途：
 
-This score is only a visual and statistical helper. It is not a strict mathematical proof of randomness.
+- 数据清洗练习
+- 机器学习预处理练习
+- 数据库测试
+- Excel / Python / R / Weka 练习
+- 前端表格异常状态测试
 
----
-
-## Export Formats
-
-ChaosGrid supports three export formats.
-
-### CSV
-
-Best for:
-
-- Excel
-- Google Sheets
-- Python pandas
-- R
-- Weka
-- Data analysis tools
-
-CSV export includes headers for table data.
-
-### TXT
-
-Best for:
-
-- Simple number lists
-- Plain text records
-- Code lists
-- Quick copying and saving
-
-### JSON
-
-Best for:
-
-- Frontend development
-- API mock data
-- Program testing
-- Data exchange
-
-JSON output is formatted with 2-space indentation.
+v0.5.1 已修复 Duplicate Row Rate 造成 ID 序号错乱的问题。
 
 ---
 
-## Copy to Clipboard
+## 📦 导出功能
 
-The Copy button copies the current result into the clipboard.
+支持导出：
 
-Copy format:
-
-- Number list: one value per line
-- Table: tab-separated text for Excel or Google Sheets
-- JSON export: structured JSON string through the download function
-
-If the browser blocks clipboard access, ChaosGrid shows a clear error message.
-
----
-
-## Dark Mode
-
-ChaosGrid supports light and dark themes.
-
-The theme switch applies instantly and is saved locally through `localStorage`.
-
-When the user opens the page again, the previous theme is restored automatically.
+- Copy：复制到剪贴板
+- CSV：适合 Excel、Google Sheets、Python、R
+- Filtered CSV：导出当前筛选后的结果
+- TXT：适合简单列表和纯文本记录
+- JSON：适合前端开发和 API mock
+- XLSX：适合直接使用 Excel 打开
+- Config：导出当前参数配置
+- Chart SVG：导出图表 SVG
+- Chart PNG：导出图表 PNG
+- Report：生成分析报告
 
 ---
 
-## Language Switch
+## 🌗 界面与交互
 
-ChaosGrid supports switching between Chinese and English.
+ChaosGrid v0.5.1 包含：
 
-The language button is placed in the top action area. The selected language is saved locally, so the interface can restore the last selected language on the next visit.
-
----
-
-## Local Settings and History
-
-ChaosGrid stores lightweight local preferences in the browser.
-
-Saved locally:
-
-- Current mode
-- Random source
-- Seed text
-- Number parameters
-- Table parameters
-- Theme
-- Language
-- Recent generation history summary
-
-Privacy note:
-
-Only settings and small history summaries are saved. Generated data is not uploaded to any server.
+- Light / Dark Mode
+- 中文 / English 切换
+- Simple View / Professional View
+- Template Gallery
+- Fixed Action Bar
+- Preview / Charts / Summary / Export / Report Tabs
+- History Restore / Regenerate / Download CSV
+- Self Test
+- Help Dialog
+- Local Settings Save
 
 ---
 
-## Privacy and Security
+## 🧭 快速开始
 
-ChaosGrid is designed as a privacy-first offline tool.
+### 方法一：直接打开
 
-It does not:
+1. 下载 `chaosgrid_index_v0.5.1.html`
+2. 双击文件
+3. 在浏览器中打开
+4. 选择模式
+5. 设置参数
+6. 点击 Generate
+7. 复制或下载结果
 
-- Require login
-- Use a backend server
-- Use a database
-- Request remote APIs
-- Upload generated data
-- Track users with cookies
-- Read local files
-- Execute user-provided code
+### 方法二：放入项目目录
 
-All generation, preview, statistics, and export operations happen inside the user's browser.
-
----
-
-## Performance Design
-
-ChaosGrid is designed to handle large generated datasets safely.
-
-Performance rules:
-
-- Large results only preview the first 100 rows
-- Full data remains available for download
-- Single number generation has an upper limit
-- Table row and column counts are limited
-- Human-like Mode has a maximum retry count
-- Rendering avoids displaying too many DOM rows at once
-
-This prevents the page from freezing when generating large datasets.
-
----
-
-## Browser Compatibility
-
-Recommended browsers:
-
-- Chrome
-- Microsoft Edge
-- Firefox
-- Safari
-
-Requirements:
-
-- Modern browser
-- JavaScript enabled
-- Local file opening support
-- Web Crypto API recommended
-
-If Web Crypto API is unavailable, ChaosGrid can fall back to a less secure random mode and shows a warning.
-
----
-
-## Project Structure
-
-The final version is designed as a single-file offline web app.
+推荐文件结构：
 
 ```text
 ChaosGrid/
-└── index.html
+├── chaosgrid_index_v0.5.1.html
+├── README.md
+├── LICENSE
+└── screenshots/
+    ├── preview.png
+    ├── charts.png
+    └── export.png
 ```
 
-Inside `index.html`:
+### 方法三：改名为 index.html
+
+如果你想把它作为 GitHub Pages 或本地网页展示，可以把文件改名为：
 
 ```text
-HTML structure
-CSS styles
-JavaScript logic
-Random generation module
-Seed PRNG module
-Human-like pattern module
-Statistics module
-Export module
-UI rendering module
-LocalStorage module
-Language and theme module
+index.html
 ```
 
-No external assets are required.
+然后直接打开或部署。
 
 ---
 
-## Technical Design
+## 📁 文件内容说明
 
-### Random Source Layer
+ChaosGrid 当前是一个单文件离线网页项目。
 
-The random source layer provides three modes:
+### `chaosgrid_index_v0.5.1.html`
 
-1. Secure Crypto Random
-2. Seed Mode
-3. Fallback Random
+主程序文件，包含所有页面、样式和逻辑。
 
-Secure mode uses Web Crypto API. Seed mode uses deterministic pseudo-random generation for reproducibility. Fallback mode exists only for compatibility.
+内部主要由三部分组成：
 
-### Generation Layer
+#### 1. HTML Structure
 
-The generation layer handles:
+负责页面结构，包括：
 
-- Number list generation
-- Unique number generation
-- Decimal generation
-- Table generation
-- Group assignment
-- Lottery generation
-- Time-series generation
-- Mock dataset generation
-- Matrix generation
+- Header 顶部状态栏
+- Settings 设置区
+- Mode Parameters 模式参数区
+- Template Gallery 模板库
+- Result Workspace 主工作区
+- Preview / Charts / Summary / Export / Report Tabs
+- Insight Panel 右侧分析面板
+- Help Dialog 帮助面板
 
-### Analysis Layer
+#### 2. CSS Styles
 
-The analysis layer handles:
+负责界面视觉，包括：
 
-- Statistics summary
-- Distribution summary
-- Pattern warning
-- Randomness score
+- Light / Dark theme
+- Card layout
+- Button styles
+- DataGrid preview
+- Chart dashboard
+- Responsive layout
+- Simple / Professional View
+- Badge and status style
 
-### Export Layer
+#### 3. JavaScript Logic
 
-The export layer converts generated data into:
+负责核心功能，包括：
 
+- 随机源管理
+- Secure random integer generation
+- Seeded PRNG
+- 各模式数据生成
+- 表格字段生成器
+- 概率模型模拟
+- 时间序列增强
+- 数据质量模拟
+- 统计摘要计算
+- 规律检测
+- 图表渲染
+- 表格预览搜索、分页、排序
+- 文件导出
+- 历史记录
+- 配置导入导出
+- 中英文切换
+- 暗色模式
+- 自检
+
+---
+
+## 🧠 技术亮点
+
+### 🔐 Web Crypto API
+
+默认使用浏览器原生 Web Crypto API：
+
+```js
+window.crypto.getRandomValues(...)
+```
+
+整数生成使用 rejection sampling，尽量减少简单取模带来的偏差。
+
+### 🌱 Seeded Random
+
+Seed Mode 使用确定性伪随机序列，适合复现实验。
+
+相同 seed 和相同参数会得到相同结果。
+
+### 📊 SVG Charts
+
+图表使用原生 HTML / CSS / JavaScript 渲染，不依赖外部图表库。
+
+优点：
+
+- 离线可用
+- 无 CDN
+- 可导出 SVG / PNG
+- 深色模式兼容
+- 容易自定义
+
+### 📴 完全离线
+
+ChaosGrid 不加载外部脚本，不请求远程 API，不上传用户数据。
+
+所有数据只在当前浏览器本地生成和处理。
+
+---
+
+## 🛡️ 隐私说明
+
+ChaosGrid 的设计原则：
+
+- 不需要用户登录
+- 不需要服务器
+- 不需要数据库
+- 不上传生成结果
+- 不读取本地文件内容，除非用户主动导入配置
+- 设置和历史记录只保存在 localStorage
+- 可以在断网环境下使用
+
+---
+
+## ✅ 测试建议
+
+发布或提交前建议测试：
+
+### 基础测试
+
+- 生成 10 个整数
+- 生成 10 个小数
+- 生成不重复数字
+- 生成随机表格
+- 生成随机分组
+- 生成抽奖结果
+- 生成时间序列
+- 生成 Mock Dataset
+- 生成矩阵
+- 生成概率模型结果
+
+### 导出测试
+
+- Copy
 - CSV
+- Filtered CSV
 - TXT
 - JSON
-- Clipboard text
+- XLSX
+- Config
+- Report
+- Chart SVG
+- Chart PNG
 
-### UI Layer
+### 边界测试
 
-The UI layer handles:
+- 最小值大于最大值
+- 数量为 0
+- 不重复数量超过范围
+- Seed 为空
+- 权重格式错误
+- 概率小于 0 或大于 1
+- 大数据量预览
+- Data Quality 中 Duplicate Row Rate
 
-- Mode switching
-- Result preview
-- Error messages
-- Help dialog
-- Theme switching
-- Language switching
-- Local setting restoration
+### UI 测试
 
----
-
-## Validation Rules
-
-ChaosGrid validates user input before generation.
-
-Common validation checks:
-
-- Minimum value must be less than or equal to maximum value
-- Count must be greater than 0
-- Decimal places must be between 0 and 10
-- Unique count cannot exceed available range
-- Row count must be greater than 0
-- Column count must be greater than 0
-- Group count cannot exceed participant count
-- Category list cannot be empty
-- Seed cannot be empty in Seed Mode
-- Date and time input must be valid
-
-Errors are shown clearly in the interface.
+- 中文 / English 切换
+- Light / Dark Mode
+- Simple / Professional View
+- Preview Tabs
+- 搜索、分页、排序
+- 历史记录恢复
+- Self Test
+- 离线打开
 
 ---
 
-## Example Workflows
+## 📌 适用场景
 
-### Generate 10 Random Integers
+ChaosGrid 适合：
 
-1. Select Single Number List.
-2. Select Integer.
-3. Set range from 1 to 100.
-4. Set count to 10.
-5. Click Generate.
-6. Copy or download the result.
-
-### Generate a Student Score Table
-
-1. Select the Student Scores template.
-2. Set row count if needed.
-3. Click Generate.
-4. Check average and score distribution.
-5. Download as CSV.
-
-### Generate A/B Test Groups
-
-1. Select the A/B Groups template.
-2. Set participant count.
-3. Enable balanced assignment.
-4. Click Generate.
-5. Download the group table.
-
-### Generate Reproducible Random Data
-
-1. Select Seed Mode.
-2. Enter a seed such as `experiment-001`.
-3. Configure mode and parameters.
-4. Click Generate.
-5. Reuse the same seed and settings to reproduce the same result.
+- 课堂教学
+- 数据分析练习
+- Excel / Google Sheets 测试
+- Python / R / Weka 数据练习
+- 前端表格 mock
+- 后端接口测试
+- 数据库导入测试
+- 随机分组
+- 抽奖编号
+- 概率实验模拟
+- 时间序列图表测试
+- 机器学习样本模拟
+- 项目展示和课程作业
 
 ---
 
-## Limitations
+## 🗺️ 版本记录
 
-ChaosGrid is a practical random data generator, not a formal randomness certification tool.
+### v0.5.1
 
-Limitations:
+- 修复 Duplicate Row Rate 导致 ID / Index / Participant ID 错乱的问题
+- 保持重复数据模拟能力
+- 保持显示序号连续
 
-- It does not generate physical true randomness
-- It should not be used as the only source for cryptographic keys
-- Human-like Mode improves visual randomness only
-- Randomness Score is an auxiliary indicator, not a proof
-- Very large datasets may be limited to protect browser performance
+### v0.5.0
+
+- Professional UI Edition
+- 新增 Simple / Professional View
+- 新增 Welcome 首屏引导
+- 新增 Report Tab
+- Template Gallery 卡片化
+- 图表全部改为纵向排列
+- DataGrid 视觉升级
+
+### v0.4.0
+
+- 新增 Preview / Charts / Summary / Export Tabs
+- 新增表格搜索、分页、排序、列显示
+- 新增 Data Quality 模拟
+- 新增时间序列趋势、季节性、噪声和尖峰
+- 新增图表导出和报告生成
+
+### v0.3.x
+
+- 图表 Dashboard 重构
+- 增强概率模型可视化
+- 增强矩阵热力图
+- 增强时间序列折线图
+
+### v0.2.x
+
+- 新增概率模型模式
+- 新增中英文切换
+- 新增多种模板
 
 ---
 
-## Future Improvements
+## 📄 License
 
-Possible future extensions:
+推荐使用 MIT License。
 
-- XLSX export
-- Charts and visual distribution graphs
-- Heatmap table preview
-- More statistical distributions
-- More mock data presets
-- Import/export configuration files
-- Advanced weighted sampling
-- More language options
-- More field validators
-- Better mobile editing experience
+```text
+MIT License
+
+Copyright (c) 2026 ChaosGrid
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files, to deal in the Software
+without restriction, including without limitation the rights to use, copy,
+modify, merge, publish, distribute, sublicense, and/or sell copies of the Software.
+```
 
 ---
 
-## Final Project Description
+## ⭐ 一句话总结
 
-ChaosGrid is a fully offline random number and random table generator built with HTML, CSS, and JavaScript. It allows users to generate secure random integers, decimals, unique numbers, random tables, group assignments, lottery numbers, mock datasets, time-series data, and random matrices directly in the browser. The system uses the Web Crypto API by default to improve unpredictability and provides Seed Mode for reproducible results. It also includes human-like pattern reduction, statistical summaries, randomness scoring, pattern warnings, dark mode, language switching, local settings, and CSV/TXT/JSON export. No server, database, login, or internet connection is required.
-
-ChaosGrid 是一个使用 HTML、CSS 和 JavaScript 构建的完全离线随机数与随机表格生成器。用户可以直接在浏览器中生成安全随机整数、小数、不重复数字、随机表格、随机分组、抽奖号码、模拟测试数据、时间序列数据和随机矩阵。系统默认使用 Web Crypto API 提高随机结果的不可预测性，同时提供 Seed Mode 用于复现实验结果。系统还包含无明显规律模式、统计摘要、随机性评分、规律警告、暗色模式、语言切换、本地设置保存以及 CSV/TXT/JSON 导出功能。整个项目不需要服务器、数据库、登录系统或网络连接。
+ChaosGrid 的核心不是“生成一个随机数”，而是在完全离线环境下，按用户要求生成高质量、可配置、可下载、可分析、视觉上无明显规律的随机数据表。
 
